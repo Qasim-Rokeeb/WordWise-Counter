@@ -13,23 +13,32 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SummarizeTextInputSchema = z.string().describe('The text to summarize.');
+const SummarizeTextInputSchema = z.object({
+  text: z.string().describe('The text to modify.'),
+  length: z
+    .string()
+    .describe(
+      'The desired length of the output text (e.g., "100 words", "2 paragraphs", "shorter", "longer").'
+    ),
+});
 export type SummarizeTextInput = z.infer<typeof SummarizeTextInputSchema>;
 
 const SummarizeTextOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the input text.'),
+  summary: z.string().describe('The modified text.'),
 });
 export type SummarizeTextOutput = z.infer<typeof SummarizeTextOutputSchema>;
 
-export async function summarizeText(text: string): Promise<SummarizeTextOutput> {
-  return summarizeTextFlow(text);
+export async function summarizeText(
+  input: SummarizeTextInput
+): Promise<SummarizeTextOutput> {
+  return summarizeTextFlow(input);
 }
 
 const summarizeTextPrompt = ai.definePrompt({
   name: 'summarizeTextPrompt',
   input: {schema: SummarizeTextInputSchema},
   output: {schema: SummarizeTextOutputSchema},
-  prompt: `Summarize the following text in a concise format:\n\n{{{text}}}`, // Access the input text using Handlebars syntax
+  prompt: `Rewrite the following text to be {{{length}}}. Do not change the original meaning of the text.\n\n{{{text}}}`, // Access the input text using Handlebars syntax
 });
 
 const summarizeTextFlow = ai.defineFlow(
@@ -38,8 +47,8 @@ const summarizeTextFlow = ai.defineFlow(
     inputSchema: SummarizeTextInputSchema,
     outputSchema: SummarizeTextOutputSchema,
   },
-  async text => {
-    const {output} = await summarizeTextPrompt(text);
+  async input => {
+    const {output} = await summarizeTextPrompt(input);
     return output!;
   }
 );
