@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -11,38 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Settings } from "lucide-react";
-
-const API_KEY_STORAGE_KEY = "gemini_api_key";
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [isDialogOpen, setDialogOpen] = useState(false);
-
-  useEffect(() => {
-    const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-    }
-  }, []);
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-    setDialogOpen(false);
-  };
 
   const { wordCount, charCount } = useMemo(() => {
     const trimmedText = text.trim();
@@ -56,41 +27,6 @@ export default function Home() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-8">
       <div className="w-full max-w-2xl relative">
-        <div className="absolute top-4 right-4">
-          <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>API Key Configuration</DialogTitle>
-                <DialogDescription>
-                  Please enter your Gemini API key. The key will be stored
-                  in your browser's local storage.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="api-key" className="text-right">
-                    API Key
-                  </Label>
-                  <Input
-                    id="api-key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="col-span-3"
-                    type="password"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleSaveApiKey}>Save changes</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
         <Card className="shadow-2xl shadow-primary/10">
           <CardHeader>
             <CardTitle className="font-headline text-3xl tracking-tight text-primary md:text-4xl">
