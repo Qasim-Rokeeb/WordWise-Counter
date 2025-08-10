@@ -38,7 +38,7 @@ const summarizeTextPrompt = ai.definePrompt({
   name: 'summarizeTextPrompt',
   input: {schema: SummarizeTextInputSchema},
   output: {schema: SummarizeTextOutputSchema},
-  prompt: `Rewrite the following text to be {{{length}}}. Do not change the original meaning of the text.\n\n{{{text}}}`, // Access the input text using Handlebars syntax
+  prompt: `Rewrite the following text to be exactly {{{length}}} words long. Do not change the original meaning of the text.\n\n{{{text}}}`, // Access the input text using Handlebars syntax
 });
 
 const summarizeTextFlow = ai.defineFlow(

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [length, setLength] = useState("a bit shorter");
+  const [length, setLength] = useState("100");
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -91,7 +91,7 @@ export default function Home() {
             />
              <div className="mt-4 flex gap-2">
               <Input
-                placeholder="Desired length (e.g. 100 words, shorter)"
+                placeholder="Desired word count (e.g. 100)"
                 value={length}
                 onChange={(e) => setLength(e.target.value)}
               />
