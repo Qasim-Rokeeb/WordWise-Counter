@@ -13,12 +13,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { summarizeText, SummarizeTextInput } from "@/ai/flows/summarize-text";
+import { modifyText, ModifyTextInput } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function Home() {
   const [text, setText] = useState("");
   const [length, setLength] = useState("100");
+  const [modificationType, setModificationType] = useState("changeLength");
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -53,9 +56,9 @@ export default function Home() {
     setIsLoading(true);
     setModifiedText("");
     try {
-      const input: SummarizeTextInput = { text, length };
-      const result = await summarizeText(input);
-      setModifiedText(result.summary);
+      const input: ModifyTextInput = { text, modification: { type: modificationType, length } };
+      const result = await modifyText(input);
+      setModifiedText(result.text);
     } catch (error) {
       toast({
         title: "Error",
@@ -89,14 +92,36 @@ export default function Home() {
               onChange={(e) => setText(e.target.value)}
               aria-label="Text input area"
             />
-             <div className="mt-4 flex gap-2">
-              <Input
-                placeholder="Desired word count (e.g. 100)"
-                value={length}
-                onChange={(e) => setLength(e.target.value)}
-              />
-              <Button onClick={handleModify} disabled={isLoading}>
-                {isLoading ? 'Modifying...' : 'Modify'}
+             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="modificationType">Modification</Label>
+                    <Select value={modificationType} onValueChange={setModificationType}>
+                        <SelectTrigger id="modificationType">
+                            <SelectValue placeholder="Select a modification" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="changeLength">Change Length</SelectItem>
+                            <SelectItem value="summarize">Summarize</SelectItem>
+                            <SelectItem value="explainLikeImFive">Explain Like I'm Five</SelectItem>
+                            <SelectItem value="humanize">Humanize</SelectItem>
+                            <SelectItem value="jargonize">Jargonize</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+              {modificationType === 'changeLength' && (
+                 <div className="flex flex-col gap-2">
+                    <Label htmlFor="length">Word Count</Label>
+                    <Input
+                        id="length"
+                        placeholder="e.g. 100"
+                        value={length}
+                        onChange={(e) => setLength(e.target.value)}
+                    />
+                 </div>
+              )}
+              <Button onClick={handleModify} disabled={isLoading} className="md:col-start-3">
+                {isLoading ? 'Modifying...' : 'Modify Text'}
               </Button>
             </div>
             {modifiedText && (
