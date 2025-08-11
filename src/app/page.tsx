@@ -71,6 +71,11 @@ export default function Home() {
     }
   };
 
+  const handleClear = () => {
+    setText("");
+    setModifiedText("");
+  };
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-8">
       <div className="w-full max-w-2xl relative">
@@ -120,9 +125,12 @@ export default function Home() {
                     />
                  </div>
               )}
-              <Button onClick={handleModify} disabled={isLoading} className="md:col-start-3">
-                {isLoading ? 'Modifying...' : 'Modify Text'}
-              </Button>
+                <div className="flex gap-2 md:col-start-3">
+                    <Button onClick={handleClear} variant="outline" className="w-full">Clear Text</Button>
+                    <Button onClick={handleModify} disabled={isLoading} className="w-full">
+                        {isLoading ? 'Modifying...' : 'Modify Text'}
+                    </Button>
+                </div>
             </div>
             {modifiedText && (
                <div className="mt-4">
@@ -176,7 +184,7 @@ export default function Home() {
         </Card>
       </div>
       <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p>&copy; 2025 WordWise Counter. All Rights Reserved.</p>
+        <p>&copy; 2025 WoRdWise CounteR. All Rights ReseRved.</p>
       </footer>
     </main>
   );
