@@ -175,6 +175,9 @@ export default function Home() {
           </CardFooter>
         </Card>
       </div>
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        <p>&copy; 2025 WordWise Counter. All rights reserved.</p>
+      </footer>
     </main>
   );
 }
