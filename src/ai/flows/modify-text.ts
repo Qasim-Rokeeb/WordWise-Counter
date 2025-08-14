@@ -18,7 +18,7 @@ const ModifyTextInputSchema = z.object({
     type: z
       .string()
       .describe(
-        'The type of modification to perform (e.g., "changeLength", "summarize", "explainLikeImFive", "humanize", "jargonize").'
+        'The type of modification to perform (e.g., "changeLength", "summarize", "explainLikeImFive", "explainCreatively", "humanize", "jargonize").'
       ),
     length: z
       .string()

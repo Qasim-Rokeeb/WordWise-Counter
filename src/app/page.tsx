@@ -108,6 +108,7 @@ export default function Home() {
                             <SelectItem value="changeLength">Change Length</SelectItem>
                             <SelectItem value="summarize">Summarize</SelectItem>
                             <SelectItem value="explainLikeImFive">Explain Like I'm Five</SelectItem>
+                            <SelectItem value="explainCreatively">Explain Creatively</SelectItem>
                             <SelectItem value="humanize">Humanize</SelectItem>
                             <SelectItem value="jargonize">Jargonize</SelectItem>
                         </SelectContent>
