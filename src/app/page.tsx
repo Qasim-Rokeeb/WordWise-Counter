@@ -17,6 +17,7 @@ import { modifyText, ModifyTextInput } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Copy } from "lucide-react";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -74,6 +75,14 @@ export default function Home() {
   const handleClear = () => {
     setText("");
     setModifiedText("");
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(modifiedText);
+    toast({
+      title: "Copied!",
+      description: "The modified text has been copied to your clipboard.",
+    });
   };
 
   return (
@@ -135,8 +144,12 @@ export default function Home() {
             </div>
             {modifiedText && (
                <div className="mt-4">
-                  <CardHeader className="p-0 mb-2">
+                  <CardHeader className="p-0 mb-2 flex flex-row items-center justify-between">
                     <CardTitle className="text-xl">Modified Text</CardTitle>
+                    <Button variant="ghost" size="icon" onClick={handleCopy}>
+                      <Copy className="h-4 w-4" />
+                      <span className="sr-only">Copy</span>
+                    </Button>
                   </CardHeader>
                   <Textarea
                     readOnly
@@ -190,3 +203,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
