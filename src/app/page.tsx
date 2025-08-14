@@ -17,7 +17,7 @@ import { modifyText, ModifyTextInput } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy } from "lucide-react";
+import { Copy, Replace } from "lucide-react";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -85,6 +85,11 @@ export default function Home() {
     });
   };
 
+  const handleSwitch = () => {
+    setText(modifiedText);
+    setModifiedText("");
+  };
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-8">
       <div className="w-full max-w-2xl relative">
@@ -146,10 +151,16 @@ export default function Home() {
                <div className="mt-4">
                   <CardHeader className="p-0 mb-2 flex flex-row items-center justify-between">
                     <CardTitle className="text-xl">Modified Text</CardTitle>
-                    <Button variant="ghost" size="icon" onClick={handleCopy}>
-                      <Copy className="h-4 w-4" />
-                      <span className="sr-only">Copy</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" onClick={handleSwitch}>
+                        <Replace className="h-4 w-4" />
+                        <span className="sr-only">Switch</span>
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={handleCopy}>
+                        <Copy className="h-4 w-4" />
+                        <span className="sr-only">Copy</span>
+                      </Button>
+                    </div>
                   </CardHeader>
                   <Textarea
                     readOnly
