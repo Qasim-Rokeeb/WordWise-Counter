@@ -198,10 +198,8 @@ export default function Home() {
         </Card>
       </div>
       <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p>&copy; 2025 WoRdWise CounteR. All Rights ReseRved.</p>
+        <p>&copy; 2025 Word Wise Counter. All Rights Reserved.</p>
       </footer>
     </main>
   );
 }
-
-    
