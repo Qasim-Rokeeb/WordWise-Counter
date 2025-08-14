@@ -46,21 +46,14 @@ const modifyTextPrompt = ai.definePrompt({
   input: {schema: ModifyTextInputSchema},
   output: {schema: ModifyTextOutputSchema},
   prompt: `
-    {{#if modification.type.changeLength}}
-    Rewrite the following text to be a total of {{{modification.length}}} words long. Do not change the original meaning of the text.
+    You are an expert text editor. Your task is to modify the provided text based on the user's request.
+
+    Modification type: {{{modification.type}}}
+    {{#if modification.length}}
+    Desired length: {{{modification.length}}}
     {{/if}}
-    {{#if modification.type.summarize}}
-    Summarize the following text.
-    {{/if}}
-    {{#if modification.type.explainLikeImFive}}
-    Explain the following text like I'm five years old.
-    {{/if}}
-    {{#if modification.type.humanize}}
-    Rewrite the following text to make it sound more human and less robotic.
-    {{/if}}
-    {{#if modification.type.jargonize}}
-    Rewrite the following text to include more technical jargon and sound more professional.
-    {{/if}}
+
+    Perform the requested modification on the following text.
 
     Text:
     {{{text}}}
@@ -74,15 +67,7 @@ const modifyTextFlow = ai.defineFlow(
     outputSchema: ModifyTextOutputSchema,
   },
   async input => {
-    // This is a workaround for the fact that Handlebars can't do equality checks.
-    const modifiedInput = {
-      ...input,
-      modification: {
-        ...input.modification,
-        [input.modification.type]: true,
-      },
-    };
-    const {output} = await modifyTextPrompt(modifiedInput);
+    const {output} = await modifyTextPrompt(input);
     return {
         text: output!.text,
     };
