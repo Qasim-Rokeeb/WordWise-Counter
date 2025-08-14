@@ -35,23 +35,16 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const { wordCount, charCount } = useMemo(() => {
-    const trimmedText = text.trim();
-    const words = trimmedText.split(/\s+/).filter(Boolean);
-    return {
-      wordCount: trimmedText === "" ? 0 : words.length,
-      charCount: text.length,
-    };
-  }, [text]);
+  const getWordCount = (str: string) => {
+    if (str.trim() === "") return 0;
+    return str.trim().split(/\s+/).length;
+  }
 
-  const { wordCount: modifiedWordCount, charCount: modifiedCharCount } = useMemo(() => {
-    const trimmedText = modifiedText.trim();
-    const words = trimmedText.split(/\s+/).filter(Boolean);
-    return {
-      wordCount: trimmedText === "" ? 0 : words.length,
-      charCount: modifiedText.length,
-    };
-  }, [modifiedText]);
+  const wordCount = useMemo(() => getWordCount(text), [text]);
+  const charCount = text.length;
+  
+  const modifiedWordCount = useMemo(() => getWordCount(modifiedText), [modifiedText]);
+  const modifiedCharCount = modifiedText.length;
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
     setModifications(mods => mods.map(mod => mod.id === id ? { ...mod, [field]: value } : mod));

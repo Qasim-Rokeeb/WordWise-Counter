@@ -27,17 +27,17 @@ const modifyTextPrompt = ai.definePrompt({
   input: {schema: ModifyTextInputSchema},
   output: {schema: ModifyTextOutputSchema},
   prompt: `
-    You are an expert text editor. Your task is to modify the provided text based on the user's series of requests. Apply them in order.
+    You are an expert text editor. Your task is to modify the provided text based on the user's series of requests. Apply them in order to the original text.
 
+    Here are the modifications to perform:
     {{#each modifications}}
-    Modification {{@index}}:
-    - Type: {{{this.type}}}
-    {{#if this.length}}
-    - Desired length: {{{this.length}}}
-    {{/if}}
+    - Modification Type: {{this.type}}
+      {{#if this.length}}
+      - Desired word count: {{this.length}} words. Your output for this modification must be exactly this many words.
+      {{/if}}
     {{/each}}
 
-    Perform the requested modifications on the following text.
+    Modify the following text based on these instructions.
 
     Text:
     {{{text}}}
