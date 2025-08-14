@@ -5,35 +5,16 @@
  * @fileOverview An AI agent for modifying text.
  *
  * - modifyText - A function that modifies text based on a specified action.
- * - ModifyTextInput - The input type for the modifyText function.
- * - ModifyTextOutput - The return type for the modifyText function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {
+  ModifyTextInputSchema,
+  ModifyTextOutputSchema,
+  type ModifyTextInput,
+  type ModifyTextOutput,
+} from '@/ai/schemas/modify-text';
 
-const ModifyTextInputSchema = z.object({
-  text: z.string().describe('The text to modify.'),
-  modification: z.object({
-    type: z
-      .string()
-      .describe(
-        'The type of modification to perform (e.g., "changeLength", "summarize", "explainLikeImFive", "explainCreatively", "humanize", "jargonize").'
-      ),
-    length: z
-      .string()
-      .optional()
-      .describe(
-        'The desired length for the output text (e.g., "100 words", "2 paragraphs"). Only used when type is "changeLength".'
-      ),
-  }),
-});
-export type ModifyTextInput = z.infer<typeof ModifyTextInputSchema>;
-
-const ModifyTextOutputSchema = z.object({
-  text: z.string().describe('The modified text.'),
-});
-export type ModifyTextOutput = z.infer<typeof ModifyTextOutputSchema>;
 
 export async function modifyText(
   input: ModifyTextInput
@@ -46,14 +27,17 @@ const modifyTextPrompt = ai.definePrompt({
   input: {schema: ModifyTextInputSchema},
   output: {schema: ModifyTextOutputSchema},
   prompt: `
-    You are an expert text editor. Your task is to modify the provided text based on the user's request.
+    You are an expert text editor. Your task is to modify the provided text based on the user's series of requests. Apply them in order.
 
-    Modification type: {{{modification.type}}}
-    {{#if modification.length}}
-    Desired length: {{{modification.length}}}
+    {{#each modifications}}
+    Modification {{@index}}:
+    - Type: {{{this.type}}}
+    {{#if this.length}}
+    - Desired length: {{{this.length}}}
     {{/if}}
+    {{/each}}
 
-    Perform the requested modification on the following text.
+    Perform the requested modifications on the following text.
 
     Text:
     {{{text}}}

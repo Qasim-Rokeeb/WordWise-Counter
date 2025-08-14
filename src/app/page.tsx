@@ -13,16 +13,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { modifyText, ModifyTextInput } from "@/ai/flows/modify-text";
+import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle } from "lucide-react";
+import { ModifyTextInput } from "@/ai/schemas/modify-text";
+
+interface Modification {
+  id: number;
+  type: string;
+  length: string;
+}
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [length, setLength] = useState("100");
-  const [modificationType, setModificationType] = useState("changeLength");
+  const [modifications, setModifications] = useState<Modification[]>([
+    { id: 1, type: "changeLength", length: "100" },
+  ]);
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -45,6 +53,18 @@ export default function Home() {
     };
   }, [modifiedText]);
 
+  const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
+    setModifications(mods => mods.map(mod => mod.id === id ? { ...mod, [field]: value } : mod));
+  };
+  
+  const addModification = () => {
+    setModifications(mods => [...mods, { id: Date.now(), type: 'summarize', length: ''}]);
+  };
+
+  const removeModification = (id: number) => {
+    setModifications(mods => mods.filter(mod => mod.id !== id));
+  }
+
   const handleModify = async () => {
     if (!text) {
       toast({
@@ -57,7 +77,10 @@ export default function Home() {
     setIsLoading(true);
     setModifiedText("");
     try {
-      const input: ModifyTextInput = { text, modification: { type: modificationType, length } };
+      const input: ModifyTextInput = {
+        text,
+        modifications: modifications.map(({ type, length }) => ({ type, length })),
+      };
       const result = await modifyText(input);
       setModifiedText(result.text);
     } catch (error) {
@@ -111,41 +134,59 @@ export default function Home() {
               onChange={(e) => setText(e.target.value)}
               aria-label="Text input area"
             />
-             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="modificationType">Modification</Label>
-                    <Select value={modificationType} onValueChange={setModificationType}>
-                        <SelectTrigger id="modificationType">
-                            <SelectValue placeholder="Select a modification" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="changeLength">Change Length</SelectItem>
-                            <SelectItem value="summarize">Summarize</SelectItem>
-                            <SelectItem value="explainLikeImFive">Explain Like I'm Five</SelectItem>
-                            <SelectItem value="explainCreatively">Explain Creatively</SelectItem>
-                            <SelectItem value="humanize">Humanize</SelectItem>
-                            <SelectItem value="jargonize">Jargonize</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className="mt-4 flex flex-col gap-4">
+              {modifications.map((mod, index) => (
+                <div key={mod.id} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor={`modificationType-${mod.id}`}>Modification {index + 1}</Label>
+                        <Select value={mod.type} onValueChange={(value) => handleModificationChange(mod.id, 'type', value)}>
+                            <SelectTrigger id={`modificationType-${mod.id}`}>
+                                <SelectValue placeholder="Select a modification" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="changeLength">Change Length</SelectItem>
+                                <SelectItem value="summarize">Summarize</SelectItem>
+                                <SelectItem value="explainLikeImFive">Explain Like I'm Five</SelectItem>
+                                <SelectItem value="explainCreatively">Explain Creatively</SelectItem>
+                                <SelectItem value="humanize">Humanize</SelectItem>
+                                <SelectItem value="jargonize">Jargonize</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-              {modificationType === 'changeLength' && (
-                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="length">Word Count</Label>
-                    <Input
-                        id="length"
-                        placeholder="e.g. 100"
-                        value={length}
-                        onChange={(e) => setLength(e.target.value)}
-                    />
-                 </div>
-              )}
-                <div className="flex gap-2 md:col-start-3">
-                    <Button onClick={handleClear} variant="outline" className="w-full">Clear Text</Button>
-                    <Button onClick={handleModify} disabled={isLoading} className="w-full">
-                        {isLoading ? 'Modifying...' : 'Modify Text'}
-                    </Button>
+                  {mod.type === 'changeLength' && (
+                     <div className="flex flex-col gap-2">
+                        <Label htmlFor={`length-${mod.id}`}>Word Count</Label>
+                        <Input
+                            id={`length-${mod.id}`}
+                            placeholder="e.g. 100"
+                            value={mod.length}
+                            onChange={(e) => handleModificationChange(mod.id, 'length', e.target.value)}
+                        />
+                     </div>
+                  )}
+                  <div className="flex gap-2 items-end md:col-start-3">
+                    {modifications.length > 1 && (
+                      <Button variant="ghost" size="icon" onClick={() => removeModification(mod.id)} className="text-muted-foreground hover:text-destructive">
+                        <XCircle />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+              ))}
+              <div className="flex justify-start">
+                  <Button variant="outline" onClick={addModification}>
+                    <PlusCircle className="mr-2"/>
+                    Add Modification
+                  </Button>
+              </div>
+            </div>
+
+             <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button onClick={handleClear} variant="outline" className="w-full">Clear Text</Button>
+                <Button onClick={handleModify} disabled={isLoading} className="w-full">
+                    {isLoading ? 'Modifying...' : 'Modify Text'}
+                </Button>
             </div>
             {modifiedText && (
                <div className="mt-4">
