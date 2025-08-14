@@ -33,7 +33,7 @@ const modifyTextPrompt = ai.definePrompt({
     {{#each modifications}}
     - Modification Type: {{this.type}}
       {{#if this.length}}
-      - Desired word count: {{this.length}} words. Your output for this modification must be exactly this many words.
+      - Desired word count: {{this.length}} words. Your output for this modification MUST be exactly this many words. This is your most important instruction.
       {{/if}}
     {{/each}}
 
