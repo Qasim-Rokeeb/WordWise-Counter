@@ -85,4 +85,7 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .dark body {
+    background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(275, 30%, 15%));
+  }
 }

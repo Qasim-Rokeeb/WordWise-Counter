@@ -107,13 +107,15 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-8">
+    <main className="flex min-h-screen w-full flex-col items-center justify-start p-4 pt-12 sm:p-8 sm:pt-24">
       <div className="w-full max-w-2xl relative">
+        <div className="text-center mb-8">
+            <h1 className="font-headline text-4xl tracking-tight text-primary md:text-5xl font-bold">
+              WordWise Counter
+            </h1>
+        </div>
         <Card className="shadow-2xl shadow-primary/10">
           <CardHeader>
-            <CardTitle className="font-headline text-3xl tracking-tight text-primary md:text-4xl">
-              WordWise Counter
-            </CardTitle>
             <CardDescription>
               Paste or type your text below to get an instant word and character
               count. You can also use AI to change the length of your text.
@@ -243,7 +245,7 @@ export default function Home() {
         </Card>
       </div>
       <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p>&copy; 2025 Word Wise Counter. All Rights Reserved.</p>
+        <p>&copy; 2025 WordWise Counter. All Rights Reserved.</p>
       </footer>
     </main>
   );
