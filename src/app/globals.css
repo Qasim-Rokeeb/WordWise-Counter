@@ -83,7 +83,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground border-8;
+    @apply bg-background text-foreground;
   }
   .dark body {
     background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(225, 30%, 15%));

@@ -114,7 +114,7 @@ export default function Home() {
               WordWise Counter
             </h1>
         </div>
-        <Card className="shadow-2xl shadow-primary/10">
+        <Card className="shadow-2xl shadow-primary/10 border-4 border-primary/10">
           <CardHeader>
             <CardDescription>
               Paste or type your text below to get an instant word and character
