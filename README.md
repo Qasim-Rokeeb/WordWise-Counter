@@ -18,3 +18,8 @@ To get started, take a look at src/app/page.tsx.
 2. Copy the text you want to analyze.
 3. Paste the text into the large text area on the page.
 4. The word and character counts will update automatically as you type or paste.
+5. Get tests summary.
+6. Creative explanations.
+7. Explain like I am five.
+8. Change word lengths.
+
