@@ -3,10 +3,18 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function Header() {
+  const pathname = usePathname();
+  const isLandingPage = pathname === '/';
+
   return (
-    <header className="px-4 lg:px-6 h-14 flex items-center absolute top-0 left-0 right-0 z-50">
+    <header className={cn(
+      "px-4 lg:px-6 h-14 flex items-center top-0 left-0 right-0 z-50",
+      isLandingPage ? "fixed bg-background/30 backdrop-blur-sm" : "absolute"
+    )}>
       <Link href="/" className="flex items-center justify-center">
         <span className="text-xl font-bold">WordWise</span>
       </Link>
