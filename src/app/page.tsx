@@ -138,6 +138,21 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section className="w-full py-12 md:py-24 lg:py-32 border-t">
+          <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
+            <div className="space-y-3">
+              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">Ready to elevate your writing?</h2>
+              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Unlock the full potential of your text with our powerful and intuitive tools. Click the button below to start counting and modifying your words.
+              </p>
+            </div>
+            <div className="flex justify-center mt-4">
+              <Link href="/word-counter">
+                <Button size="lg">Start Modifying</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center justify-center px-4 md:px-6 border-t">
         <p className="text-xs text-muted-foreground">&copy; 2025 WordWise Counter. All Rights Reserved.</p>
