@@ -51,43 +51,46 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-              <div className="flex flex-col justify-center space-y-4">
-                <ul className="grid gap-6">
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold flex items-center gap-2"><ScanText/>Instant Counts</h3>
-                      <p className="text-muted-foreground">
-                        Get immediate word and character counts as you type or paste text.
-                      </p>
+            <div className="mx-auto grid max-w-sm gap-8 pt-12 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3">
+              <Card className="bg-background/50">
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
+                        <ScanText className="h-6 w-6"/>
                     </div>
-                  </li>
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold flex items-center gap-2"><Bot/>AI-Powered Modifications</h3>
-                      <p className="text-muted-foreground">
-                        Summarize, change length, simplify, or even make your text more creative with a single click.
-                      </p>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold flex items-center gap-2"><FastForward/>Efficient Workflow</h3>
-                      <p className="text-muted-foreground">
-                        Easily copy, clear, or swap your modified text back for further editing.
-                      </p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <img
-                src="https://placehold.co/600x500.png"
-                width="600"
-                height="500"
-                alt="Features"
-                 data-ai-hint="writer computer"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
-              />
+                  <CardTitle>Instant Counts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Get immediate word and character counts as you type or paste text, helping you stay on track with your writing goals.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-background/50">
+                <CardHeader className="flex flex-row items-center gap-4">
+                  <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
+                    <Bot className="h-6 w-6"/>
+                  </div>
+                  <CardTitle>AI Modifications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Summarize, change length, simplify, or even make your text more creative with a single click.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-background/50">
+                <CardHeader className="flex flex-row items-center gap-4">
+                   <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
+                    <FastForward className="h-6 w-6"/>
+                   </div>
+                  <CardTitle>Efficient Workflow</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Easily copy, clear, or swap your modified text back into the editor for a seamless and productive writing experience.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
