@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'WordWise Counter',
-  description: 'Instantly count words and characters in your text.',
+  title: 'WordWise Counter | AI-Powered Text Tools',
+  description: 'Instantly count words, characters, and transform your text with powerful AI modifications.',
 };
 
 export default function RootLayout({
