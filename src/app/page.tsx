@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Bot, FastForward, ScanText } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Bot, FastForward, ScanText } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 
@@ -94,6 +95,49 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        
+        <section id="faq" className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">FAQ</div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Frequently Asked Questions</h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Have questions? We've got answers.
+                </p>
+              </div>
+            </div>
+            <div className="mx-auto mt-12 w-full max-w-3xl">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>What is WordWise Counter?</AccordionTrigger>
+                  <AccordionContent>
+                    WordWise Counter is a simple and efficient web application that allows you to easily count the number of words and characters in any text. It also offers AI-powered text modifications to enhance your writing.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2">
+                  <AccordionTrigger>How do I use the AI modifications?</AccordionTrigger>
+                  <AccordionContent>
+                    Simply paste your text into the text area, select the modification you want to apply from the dropdown menu (e.g., summarize, change length), configure any options, and click the "Modify Text" button to see the result.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-3">
+                  <AccordionTrigger>Is my data saved on your servers?</AccordionTrigger>
+                  <AccordionContent>
+                    No, WordWise Counter respects your privacy. All text processing is done in real-time, and we do not store your text on our servers.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-4">
+                  <AccordionTrigger>Can I apply multiple modifications at once?</AccordionTrigger>
+                  <AccordionContent>
+                    Yes! You can chain multiple modifications together. Simply click "Add Modification" to add another step to the process. The modifications will be applied sequentially to your text.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          </div>
+        </section>
+
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center justify-center px-4 md:px-6 border-t">
         <p className="text-xs text-muted-foreground">&copy; 2025 WordWise Counter. All Rights Reserved.</p>
