@@ -246,7 +246,7 @@ export default function WordCounterPage() {
           </CardFooter>
         </Card>
       </div>
-      <footer className="mt-8 text-center text-sm text-muted-foreground">
+      <footer className="mt-8 text-center text-sm text-muted-foreground w-full">
         <p>&copy; 2025 WordWise Counter. All Rights Reserved.</p>
       </footer>
     </main>
