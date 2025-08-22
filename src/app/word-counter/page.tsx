@@ -32,6 +32,7 @@ import {
   FileUp,
   BarChartHorizontal,
   Trash2,
+  TestTube,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -57,6 +58,8 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from 'recharts';
+import { testText, TestResult } from '@/ai/flows/test-text';
+import { TestSummary } from '@/components/test-summary';
 
 const STOPWORDS = new Set([
   'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at',
@@ -124,6 +127,8 @@ export default function WordCounterPage() {
   ]);
   const [modifiedText, setModifiedText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResults, setTestResults] = useState<TestResult | null>(null);
 
   const [analysisOptions, setAnalysisOptions] = useState(initialAnalysisOptions);
   const [modifiedAnalysisOptions, setModifiedAnalysisOptions] = useState(initialAnalysisOptions);
@@ -260,9 +265,37 @@ export default function WordCounterPage() {
     }
   }, [text, modifications, toast]);
 
+  const handleTest = useCallback(async () => {
+    if (!text) {
+      toast({
+        title: 'Error',
+        description: 'Please enter some text to test.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsTesting(true);
+    setTestResults(null);
+    try {
+      const results = await testText(text);
+      setTestResults(results);
+    } catch (error) {
+       toast({
+        title: 'Error',
+        description: 'Failed to run tests. Please try again.',
+        variant: 'destructive',
+      });
+      console.error(error);
+    } finally {
+      setIsTesting(false);
+    }
+
+  }, [text, toast]);
+
   const handleClear = useCallback(() => {
     setText('');
     setModifiedText('');
+    setTestResults(null);
     toast({
         title: "Cleared",
         description: "The text areas have been cleared."
@@ -330,6 +363,7 @@ export default function WordCounterPage() {
         readabilityDescription: getReadabilityDescription(modifiedTextAnalysis.readabilityScore),
         highlightedWords: Array.from(modifiedTextAnalysis.highlightedWords)
       },
+      testResults
     };
 
     let content = '';
@@ -851,6 +885,18 @@ export default function WordCounterPage() {
                     </div>
                   </div>
                 )}
+                 <div className="w-full mt-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                            <TestTube className="text-muted-foreground"/>
+                            <Label className="text-lg font-semibold">Test Summary</Label>
+                        </div>
+                        <Button onClick={handleTest} variant="outline" size="sm" disabled={isTesting}>
+                            {isTesting ? 'Running Tests...' : 'Run Tests'}
+                        </Button>
+                    </div>
+                    {testResults && <TestSummary results={testResults} />}
+                 </div>
                </div>
             </CardFooter>
           </Card>
@@ -864,5 +910,3 @@ export default function WordCounterPage() {
     </div>
   );
 }
-
-    
