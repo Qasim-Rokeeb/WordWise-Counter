@@ -1,7 +1,8 @@
 
+
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -17,7 +18,7 @@ import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit, FileJson, FileText } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit, FileJson, FileText, Upload } from "lucide-react";
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
 import { syllable } from "syllable";
@@ -63,6 +64,7 @@ export default function WordCounterPage() {
   const [highlightedText, setHighlightedText] = useState<React.ReactNode>(null);
   const [wordLengthData, setWordLengthData] = useState<WordLengthData[]>([]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
   
@@ -264,6 +266,30 @@ export default function WordCounterPage() {
     setModifiedText("");
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fileText = e.target?.result as string;
+        setText(fileText);
+        toast({
+          title: "File imported!",
+          description: `${file.name} has been loaded.`,
+        });
+      };
+      reader.readAsText(file);
+    }
+    // Reset file input value to allow re-uploading the same file
+    if(event.target) {
+        event.target.value = '';
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const getExportData = () => {
     const data: any = {
       originalText: text,
@@ -411,7 +437,23 @@ export default function WordCounterPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-2">
-                <Label htmlFor="text-input" className="text-lg font-semibold">Your Text</Label>
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="text-input" className="text-lg font-semibold">Your Text</Label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                            accept=".txt,.md"
+                        />
+                        <Button variant="outline" size="sm" onClick={handleImportClick}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import File
+                        </Button>
+                        <Button onClick={handleClear} variant="outline" size="sm">Clear Text</Button>
+                    </div>
+                </div>
                 <Textarea
                   id="text-input"
                   placeholder="Start writing, or paste your text here..."
@@ -473,20 +515,17 @@ export default function WordCounterPage() {
                     </div>
                   </div>
                 ))}
-                <div className="flex justify-start">
+                <div className="flex justify-between">
                     <Button variant="outline" onClick={addModification}>
                       <PlusCircle className="mr-2"/>
                       Add Modification
                     </Button>
+                    <Button onClick={handleModify} disabled={isLoading}>
+                        {isLoading ? 'Modifying...' : 'Modify Text'}
+                    </Button>
                 </div>
               </div>
 
-               <div className="mt-6 grid grid-cols-2 gap-2">
-                  <Button onClick={handleClear} variant="outline" className="w-full">Clear Text</Button>
-                  <Button onClick={handleModify} disabled={isLoading} className="w-full">
-                      {isLoading ? 'Modifying...' : 'Modify Text'}
-                  </Button>
-              </div>
               {modifiedText && (
                  <div className="mt-6">
                     <CardHeader className="p-0 mb-2 flex flex-row items-center justify-between">
@@ -635,5 +674,7 @@ export default function WordCounterPage() {
     </div>
   );
 }
+
+    
 
     
