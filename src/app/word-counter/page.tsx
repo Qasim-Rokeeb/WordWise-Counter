@@ -18,9 +18,10 @@ import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace, PlusCircle, XCircle, Clock } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit } from "lucide-react";
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
+import { syllable } from "syllable";
 
 
 interface Modification {
@@ -36,14 +37,29 @@ export default function WordCounterPage() {
   ]);
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
+  const [syllableCount, setSyllableCount] = useState(0);
+  const [readabilityScore, setReadabilityScore] = useState(0);
+
   const { toast } = useToast();
 
   const getWordCount = (str: string) => {
     if (str.trim() === "") return 0;
     return str.trim().split(/\s+/).length;
+  }
+  
+  const getSentenceCount = (str: string) => {
+    if (str.trim() === "") return 0;
+    const sentences = str.match(/[.!?]+/g);
+    return sentences ? sentences.length : 1;
+  }
+
+  const getSyllableCount = (str: string) => {
+    if (str.trim() === "") return 0;
+    return syllable(str);
   }
 
   const calculateReadingTime = (wordCount: number) => {
@@ -53,12 +69,24 @@ export default function WordCounterPage() {
     return Math.ceil(minutes);
   }
 
+  const calculateReadability = (totalWords: number, totalSentences: number, totalSyllables: number) => {
+    if (totalWords === 0 || totalSentences === 0) return 0;
+    // Flesch Reading Ease formula
+    const score = 206.835 - 1.015 * (totalWords / totalSentences) - 84.6 * (totalSyllables / totalWords);
+    return Math.max(0, Math.min(100, parseFloat(score.toFixed(1)))); // Clamp between 0 and 100
+  };
+
   useEffect(() => {
     const handler = setTimeout(() => {
       const currentWordCount = getWordCount(text);
+      const currentSyllableCount = getSyllableCount(text);
+      const currentSentenceCount = getSentenceCount(text);
+
       setWordCount(currentWordCount);
       setCharCount(text.length);
       setReadingTime(calculateReadingTime(currentWordCount));
+      setSyllableCount(currentSyllableCount);
+      setReadabilityScore(calculateReadability(currentWordCount, currentSentenceCount, currentSyllableCount));
     }, 300);
 
     return () => {
@@ -66,9 +94,18 @@ export default function WordCounterPage() {
     };
   }, [text]);
   
-  const modifiedWordCount = useMemo(() => getWordCount(modifiedText), [modifiedText]);
-  const modifiedCharCount = modifiedText.length;
-  const modifiedReadingTime = useMemo(() => calculateReadingTime(modifiedWordCount), [modifiedWordCount]);
+  const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
+    const wc = getWordCount(modifiedText);
+    const sc = getSyllableCount(modifiedText);
+    const sentc = getSentenceCount(modifiedText);
+    return {
+      modifiedWordCount: wc,
+      modifiedCharCount: modifiedText.length,
+      modifiedReadingTime: calculateReadingTime(wc),
+      modifiedSyllableCount: sc,
+      modifiedReadabilityScore: calculateReadability(wc, sentc, sc),
+    };
+  }, [modifiedText]);
 
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
@@ -134,7 +171,7 @@ export default function WordCounterPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
+      <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="w-full relative mt-8">
           <Card className="shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20">
             <CardHeader>
@@ -236,30 +273,35 @@ export default function WordCounterPage() {
                     />
                      <div className="mt-2">
                        <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
-                       <div className="flex flex-col items-stretch gap-4 rounded-b-lg pt-2 sm:flex-row sm:items-center sm:justify-start sm:gap-8">
-                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                              Words
-                            </span>
-                            <span className="text-4xl font-bold text-accent sm:order-1">
-                              {modifiedWordCount}
-                            </span>
+                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 rounded-b-lg pt-2">
+                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                            <span className="text-sm font-medium text-muted-foreground">Words</span>
+                            <span className="text-4xl font-bold text-accent">{modifiedWordCount}</span>
                           </div>
-                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                              Characters
-                            </span>
-                            <span className="text-4xl font-bold text-accent sm:order-1">
-                              {modifiedCharCount}
-                            </span>
+                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                            <span className="text-sm font-medium text-muted-foreground">Characters</span>
+                            <span className="text-4xl font-bold text-accent">{modifiedCharCount}</span>
                           </div>
-                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                              Reading Time
-                            </span>
-                            <span className="text-4xl font-bold text-accent sm:order-1">
-                              {modifiedReadingTime} min
-                            </span>
+                           <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="h-4 w-4" />
+                                <span className="text-sm font-medium">Reading Time</span>
+                              </div>
+                              <span className="text-4xl font-bold text-accent">{modifiedReadingTime} min</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                <BrainCircuit className="h-4 w-4" />
+                                <span className="text-sm font-medium">Syllables</span>
+                              </div>
+                            <span className="text-4xl font-bold text-accent">{modifiedSyllableCount}</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                               <div className="flex items-center gap-2 text-muted-foreground">
+                                <BookOpen className="h-4 w-4" />
+                                <span className="text-sm font-medium">Readability</span>
+                              </div>
+                            <span className="text-4xl font-bold text-accent">{modifiedReadabilityScore}</span>
                           </div>
                         </div>
                      </div>
@@ -267,34 +309,36 @@ export default function WordCounterPage() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col items-start gap-2 rounded-b-lg bg-muted/30 p-4 sm:p-6">
-              <Label className="text-lg font-semibold">Original Text Counts</Label>
-              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-center sm:gap-8 w-full">
-                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
-                  <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                    Words
-                  </span>
-                  <span className="text-4xl font-bold text-accent sm:order-1">
-                    {wordCount}
-                  </span>
+              <Label className="text-lg font-semibold">Original Text Analysis</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+                <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                  <span className="text-sm font-medium text-muted-foreground">Words</span>
+                  <span className="text-4xl font-bold text-accent">{wordCount}</span>
                 </div>
-                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
-                  <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                    Characters
-                  </span>
-                  <span className="text-4xl font-bold text-accent sm:order-1">
-                    {charCount}
-                  </span>
+                <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                  <span className="text-sm font-medium text-muted-foreground">Characters</span>
+                  <span className="text-4xl font-bold text-accent">{charCount}</span>
                 </div>
-                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
-                  <div className="flex items-center gap-2 text-muted-foreground sm:order-2">
+                <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      Reading Time
-                    </span>
+                    <span className="text-sm font-medium">Reading Time</span>
                   </div>
-                  <span className="text-4xl font-bold text-accent sm:order-1">
-                    {readingTime} min
-                  </span>
+                  <span className="text-4xl font-bold text-accent">{readingTime} min</span>
+                </div>
+                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                   <div className="flex items-center gap-2 text-muted-foreground">
+                    <BrainCircuit className="h-4 w-4" />
+                    <span className="text-sm font-medium">Syllables</span>
+                  </div>
+                  <span className="text-4xl font-bold text-accent">{syllableCount}</span>
+                </div>
+                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                   <div className="flex items-center gap-2 text-muted-foreground">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="text-sm font-medium">Readability</span>
+                  </div>
+                  <span className="text-4xl font-bold text-accent">{readabilityScore}</span>
                 </div>
               </div>
             </CardFooter>
