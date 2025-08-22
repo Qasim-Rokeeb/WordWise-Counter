@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -22,6 +21,7 @@ import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit } fro
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
 import { syllable } from "syllable";
+import { Switch } from "@/components/ui/switch";
 
 
 interface Modification {
@@ -37,6 +37,7 @@ export default function WordCounterPage() {
   ]);
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [includeSpaces, setIncludeSpaces] = useState(true);
   
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
@@ -61,6 +62,10 @@ export default function WordCounterPage() {
     if (str.trim() === "") return 0;
     return syllable(str);
   }
+  
+  const getCharCount = (str: string, includeSpaces: boolean) => {
+    return includeSpaces ? str.length : str.replace(/\s/g, '').length;
+  }
 
   const calculateReadingTime = (wordCount: number) => {
     const wordsPerMinute = 225;
@@ -81,9 +86,10 @@ export default function WordCounterPage() {
       const currentWordCount = getWordCount(text);
       const currentSyllableCount = getSyllableCount(text);
       const currentSentenceCount = getSentenceCount(text);
+      const currentCharCount = getCharCount(text, includeSpaces);
 
       setWordCount(currentWordCount);
-      setCharCount(text.length);
+      setCharCount(currentCharCount);
       setReadingTime(calculateReadingTime(currentWordCount));
       setSyllableCount(currentSyllableCount);
       setReadabilityScore(calculateReadability(currentWordCount, currentSentenceCount, currentSyllableCount));
@@ -92,20 +98,21 @@ export default function WordCounterPage() {
     return () => {
       clearTimeout(handler);
     };
-  }, [text]);
+  }, [text, includeSpaces]);
   
   const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
     const wc = getWordCount(modifiedText);
     const sc = getSyllableCount(modifiedText);
     const sentc = getSentenceCount(modifiedText);
+    const cc = getCharCount(modifiedText, includeSpaces);
     return {
       modifiedWordCount: wc,
-      modifiedCharCount: modifiedText.length,
+      modifiedCharCount: cc,
       modifiedReadingTime: calculateReadingTime(wc),
       modifiedSyllableCount: sc,
       modifiedReadabilityScore: calculateReadability(wc, sentc, sc),
     };
-  }, [modifiedText]);
+  }, [modifiedText, includeSpaces]);
 
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
@@ -272,7 +279,13 @@ export default function WordCounterPage() {
                       className="min-h-[150px] resize-y rounded-lg p-4 text-base bg-muted/30"
                     />
                      <div className="mt-2">
-                       <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
+                       <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
+                           <div className="flex items-center space-x-2">
+                              <Switch id="include-spaces-modified" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
+                              <Label htmlFor="include-spaces-modified" className="text-sm text-muted-foreground">Include spaces</Label>
+                            </div>
+                       </div>
                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 rounded-b-lg pt-2">
                           <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                             <span className="text-sm font-medium text-muted-foreground">Words</span>
@@ -309,7 +322,13 @@ export default function WordCounterPage() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col items-start gap-2 rounded-b-lg bg-muted/30 p-4 sm:p-6">
-              <Label className="text-lg font-semibold">Original Text Analysis</Label>
+              <div className="w-full flex items-center justify-between">
+                <Label className="text-lg font-semibold">Original Text Analysis</Label>
+                <div className="flex items-center space-x-2">
+                    <Switch id="include-spaces-original" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
+                    <Label htmlFor="include-spaces-original" className="text-sm text-muted-foreground">Include spaces</Label>
+                </div>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                   <span className="text-sm font-medium text-muted-foreground">Words</span>
@@ -351,3 +370,5 @@ export default function WordCounterPage() {
     </div>
   );
 }
+
+    
