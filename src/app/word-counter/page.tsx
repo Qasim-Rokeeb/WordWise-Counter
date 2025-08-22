@@ -22,6 +22,8 @@ import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
 import { syllable } from "syllable";
 import { Switch } from "@/components/ui/switch";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 
 interface Modification {
@@ -29,6 +31,11 @@ interface Modification {
   type: string;
   length: string;
 }
+
+type WordLengthData = {
+  length: number;
+  count: number;
+};
 
 const stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"];
 
@@ -54,6 +61,8 @@ export default function WordCounterPage() {
   const [syllableCount, setSyllableCount] = useState(0);
   const [readabilityScore, setReadabilityScore] = useState(0);
   const [highlightedText, setHighlightedText] = useState<React.ReactNode>(null);
+  const [wordLengthData, setWordLengthData] = useState<WordLengthData[]>([]);
+
 
   const { toast } = useToast();
   
@@ -65,12 +74,16 @@ export default function WordCounterPage() {
     return processedText;
   }
 
-  const getWordCount = (str: string) => {
-    if (str.trim() === "") return 0;
+  const getWords = (str: string) => {
+    if (str.trim() === "") return [];
     let words = str.trim().split(/\s+/);
     if(ignoreStopwords) {
       words = words.filter(word => !stopwords.includes(word.toLowerCase()));
     }
+    return words;
+  }
+
+  const getWordCount = (words: string[]) => {
     return words.length;
   }
   
@@ -103,10 +116,29 @@ export default function WordCounterPage() {
     return Math.max(0, Math.min(100, parseFloat(score.toFixed(1)))); // Clamp between 0 and 100
   };
 
+  const getWordLengthDistribution = (words: string[]): WordLengthData[] => {
+    if (words.length === 0) return [];
+    const distribution: { [key: number]: number } = {};
+    words.forEach(word => {
+      const length = word.length;
+      if(length > 0) {
+        distribution[length] = (distribution[length] || 0) + 1;
+      }
+    });
+
+    return Object.entries(distribution)
+        .map(([length, count]) => ({
+            length: parseInt(length, 10),
+            count,
+        }))
+        .sort((a, b) => a.length - b.length);
+  };
+
   useEffect(() => {
     const handler = setTimeout(() => {
       const processed = processText(text);
-      const currentWordCount = getWordCount(processed);
+      const words = getWords(processed);
+      const currentWordCount = getWordCount(words);
       const currentSyllableCount = getSyllableCount(processed);
       const currentSentenceCount = getSentenceCount(processed);
       const currentCharCount = getCharCount(text, includeSpaces);
@@ -116,6 +148,7 @@ export default function WordCounterPage() {
       setReadingTime(calculateReadingTime(currentWordCount));
       setSyllableCount(currentSyllableCount);
       setReadabilityScore(calculateReadability(currentWordCount, currentSentenceCount, currentSyllableCount));
+      setWordLengthData(getWordLengthDistribution(words));
 
       // Highlighting logic
       const minL = minWordLength === '' ? 0 : minWordLength;
@@ -155,7 +188,8 @@ export default function WordCounterPage() {
   
   const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
     const processed = processText(modifiedText);
-    const wc = getWordCount(processed);
+    const words = getWords(processed);
+    const wc = getWordCount(words);
     const sc = getSyllableCount(processed);
     const sentc = getSentenceCount(processed);
     const cc = getCharCount(modifiedText, includeSpaces);
@@ -446,6 +480,39 @@ export default function WordCounterPage() {
                   <span className="text-4xl font-bold text-accent">{readabilityScore}</span>
                 </div>
               </div>
+               {wordLengthData.length > 0 && (
+                <div className="w-full mt-4">
+                  <Label className="text-lg font-semibold">Word Length Distribution</Label>
+                   <ChartContainer config={{
+                      count: {
+                        label: "Word Count",
+                        color: "hsl(var(--primary))",
+                      },
+                    }} className="h-[250px] w-full">
+                      <BarChart accessibilityLayer data={wordLengthData}>
+                        <XAxis
+                          dataKey="length"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          tickFormatter={(value) => `${value}`}
+                          name="Word Length"
+                        />
+                         <YAxis
+                           tickLine={false}
+                           axisLine={false}
+                           tickMargin={8}
+                           allowDecimals={false}
+                         />
+                        <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent indicator="dot" />}
+                        />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                      </BarChart>
+                    </ChartContainer>
+                </div>
+              )}
             </CardFooter>
           </Card>
         </div>
