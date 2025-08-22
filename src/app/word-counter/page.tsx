@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,28 +17,15 @@ import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit, FileJson, FileText, Upload } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle } from "lucide-react";
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
-import { syllable } from "syllable";
-import { Switch } from "@/components/ui/switch";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
 
 interface Modification {
   id: number;
   type: string;
   length: string;
 }
-
-type WordLengthData = {
-  length: number;
-  count: number;
-};
-
-const stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"];
-
 
 export default function WordCounterPage() {
   const [text, setText] = useState("");
@@ -49,161 +35,24 @@ export default function WordCounterPage() {
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  const [includeSpaces, setIncludeSpaces] = useState(true);
-  const [ignorePunctuation, setIgnorePunctuation] = useState(false);
-  const [ignoreStopwords, setIgnoreStopwords] = useState(false);
-  const [minWordLength, setMinWordLength] = useState<number | ''>('');
-  const [maxWordLength, setMaxWordLength] = useState<number | ''>('');
-
-  
-  const [wordCount, setWordCount] = useState(0);
-  const [charCount, setCharCount] = useState(0);
-  const [readingTime, setReadingTime] = useState(0);
-  const [syllableCount, setSyllableCount] = useState(0);
-  const [readabilityScore, setReadabilityScore] = useState(0);
-  const [highlightedText, setHighlightedText] = useState<React.ReactNode>(null);
-  const [wordLengthData, setWordLengthData] = useState<WordLengthData[]>([]);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const { toast } = useToast();
   
-  const processText = (str: string) => {
-    let processedText = str;
-    if (ignorePunctuation) {
-      processedText = processedText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
-    }
-    return processedText;
-  }
-
-  const getWords = (str: string) => {
-    if (str.trim() === "") return [];
-    let words = str.trim().split(/\s+/);
-    if(ignoreStopwords) {
-      words = words.filter(word => !stopwords.includes(word.toLowerCase()));
-    }
-    return words;
-  }
-
-  const getWordCount = (words: string[]) => {
-    return words.length;
-  }
-  
-  const getSentenceCount = (str: string) => {
-    if (str.trim() === "") return 0;
-    const sentences = str.match(/[.!?]+/g);
-    return sentences ? sentences.length : 1;
-  }
-
-  const getSyllableCount = (str: string) => {
-    if (str.trim() === "") return 0;
-    return syllable(str);
-  }
-  
-  const getCharCount = (str: string, includeSpaces: boolean) => {
-    return includeSpaces ? str.length : str.replace(/\s/g, '').length;
-  }
-
-  const calculateReadingTime = (wordCount: number) => {
-    const wordsPerMinute = 225;
-    if (wordCount === 0) return 0;
-    const minutes = wordCount / wordsPerMinute;
-    return Math.ceil(minutes);
-  }
-
-  const calculateReadability = (totalWords: number, totalSentences: number, totalSyllables: number) => {
-    if (totalWords === 0 || totalSentences === 0) return 0;
-    // Flesch Reading Ease formula
-    const score = 206.835 - 1.015 * (totalWords / totalSentences) - 84.6 * (totalSyllables / totalWords);
-    return Math.max(0, Math.min(100, parseFloat(score.toFixed(1)))); // Clamp between 0 and 100
-  };
-
-  const getWordLengthDistribution = (words: string[]): WordLengthData[] => {
-    if (words.length === 0) return [];
-    const distribution: { [key: number]: number } = {};
-    words.forEach(word => {
-      const length = word.length;
-      if(length > 0) {
-        distribution[length] = (distribution[length] || 0) + 1;
-      }
-    });
-
-    return Object.entries(distribution)
-        .map(([length, count]) => ({
-            length: parseInt(length, 10),
-            count,
-        }))
-        .sort((a, b) => a.length - b.length);
-  };
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const processed = processText(text);
-      const words = getWords(processed);
-      const currentWordCount = getWordCount(words);
-      const currentSyllableCount = getSyllableCount(processed);
-      const currentSentenceCount = getSentenceCount(processed);
-      const currentCharCount = getCharCount(text, includeSpaces);
-
-      setWordCount(currentWordCount);
-      setCharCount(currentCharCount);
-      setReadingTime(calculateReadingTime(currentWordCount));
-      setSyllableCount(currentSyllableCount);
-      setReadabilityScore(calculateReadability(currentWordCount, currentSentenceCount, currentSyllableCount));
-      setWordLengthData(getWordLengthDistribution(words));
-
-      // Highlighting logic
-      const minL = minWordLength === '' ? 0 : minWordLength;
-      const maxL = maxWordLength === '' ? Infinity : maxWordLength;
-
-      if (text.trim() === '' || (minWordLength === '' && maxWordLength === '')) {
-         setHighlightedText(null);
-         return;
-      }
-      
-      const parts = text.split(/(\s+)/); // Split by whitespace, keeping the whitespace
-      const highlighted = parts.map((part, index) => {
-        if (/\s+/.test(part)) { // It's a whitespace part
-          return <span key={index}>{part}</span>;
-        }
-        const word = part;
-        const wordLength = word.length;
-        const isHighlighted = wordLength >= minL && wordLength <= maxL;
-        
-        return isHighlighted ? (
-          <mark key={index} className="bg-accent/50 text-accent-foreground rounded-sm px-1">
-            {word}
-          </mark>
-        ) : (
-          <span key={index}>{word}</span>
-        );
-      });
-      setHighlightedText(<div className="whitespace-pre-wrap">{highlighted}</div>);
-
-
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [text, includeSpaces, ignorePunctuation, ignoreStopwords, minWordLength, maxWordLength]);
-  
-  const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
-    if (!modifiedText) return { modifiedWordCount: 0, modifiedCharCount: 0, modifiedReadingTime: 0, modifiedSyllableCount: 0, modifiedReadabilityScore: 0 };
-    const processed = processText(modifiedText);
-    const words = getWords(processed);
-    const wc = getWordCount(words);
-    const sc = getSyllableCount(processed);
-    const sentc = getSentenceCount(processed);
-    const cc = getCharCount(modifiedText, includeSpaces);
+  const { wordCount, charCount } = useMemo(() => {
+    const words = text.trim().split(/\s+/).filter(Boolean);
     return {
-      modifiedWordCount: wc,
-      modifiedCharCount: cc,
-      modifiedReadingTime: calculateReadingTime(wc),
-      modifiedSyllableCount: sc,
-      modifiedReadabilityScore: calculateReadability(wc, sentc, sc),
+      wordCount: text ? words.length : 0,
+      charCount: text.length,
     };
-  }, [modifiedText, includeSpaces, ignorePunctuation, ignoreStopwords]);
+  }, [text]);
+
+  const { modifiedWordCount, modifiedCharCount } = useMemo(() => {
+    if (!modifiedText) return { modifiedWordCount: 0, modifiedCharCount: 0 };
+    const words = modifiedText.trim().split(/\s+/).filter(Boolean);
+    return {
+      modifiedWordCount: modifiedText ? words.length : 0,
+      modifiedCharCount: modifiedText.length,
+    };
+  }, [modifiedText]);
 
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
@@ -266,160 +115,6 @@ export default function WordCounterPage() {
     setModifiedText("");
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const fileText = e.target?.result as string;
-        setText(fileText);
-        toast({
-          title: "File imported!",
-          description: `${file.name} has been loaded.`,
-        });
-      };
-      reader.readAsText(file);
-    }
-    // Reset file input value to allow re-uploading the same file
-    if(event.target) {
-        event.target.value = '';
-    }
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const getExportData = () => {
-    const data: any = {
-      originalText: text,
-      analysis: {
-        wordCount,
-        charCount,
-        readingTime,
-        syllableCount,
-        readabilityScore,
-        wordLengthDistribution: wordLengthData,
-      },
-      settings: {
-        includeSpaces,
-        ignorePunctuation,
-        ignoreStopwords,
-        minWordLength: minWordLength === '' ? null : minWordLength,
-        maxWordLength: maxWordLength === '' ? null : maxWordLength,
-      }
-    };
-    if (modifiedText) {
-      data.modifiedText = modifiedText;
-      data.modifiedAnalysis = {
-        wordCount: modifiedWordCount,
-        charCount: modifiedCharCount,
-        readingTime: modifiedReadingTime,
-        syllableCount: modifiedSyllableCount,
-        readabilityScore: modifiedReadabilityScore,
-      }
-    }
-    return data;
-  }
-
-  const handleExportJSON = () => {
-    const data = getExportData();
-    const jsonString = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'wordwise_analysis.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Exported!",
-      description: "Analysis results have been exported as a JSON file.",
-    });
-  }
-
-  const handleExportCSV = () => {
-    const data = getExportData();
-    let csvContent = "data:text/csv;charset=utf-8,";
-    
-    // Summary
-    csvContent += "Metric,Original Value,Modified Value\r\n";
-    csvContent += `Word Count,${data.analysis.wordCount},${data.modifiedAnalysis?.wordCount || ''}\r\n`;
-    csvContent += `Character Count,${data.analysis.charCount},${data.modifiedAnalysis?.charCount || ''}\r\n`;
-    csvContent += `Reading Time (min),${data.analysis.readingTime},${data.modifiedAnalysis?.readingTime || ''}\r\n`;
-    csvContent += `Syllable Count,${data.analysis.syllableCount},${data.modifiedAnalysis?.syllableCount || ''}\r\n`;
-    csvContent += `Readability Score,${data.analysis.readabilityScore},${data.modifiedAnalysis?.readabilityScore || ''}\r\n`;
-    csvContent += "\r\n";
-
-    // Word Length Distribution
-    csvContent += "Word Length,Count\r\n";
-    data.analysis.wordLengthDistribution.forEach((row: WordLengthData) => {
-        csvContent += `${row.length},${row.count}\r\n`;
-    });
-    csvContent += "\r\n";
-    
-    // Settings
-    csvContent += "Setting,Value\r\n";
-    csvContent += `Include Spaces,${data.settings.includeSpaces}\r\n`;
-    csvContent += `Ignore Punctuation,${data.settings.ignorePunctuation}\r\n`;
-    csvContent += `Ignore Stopwords,${data.settings.ignoreStopwords}\r\n`;
-    csvContent += `Min Word Length,${data.settings.minWordLength || ''}\r\n`;
-    csvContent += `Max Word Length,${data.settings.maxWordLength || ''}\r\n`;
-    csvContent += "\r\n";
-
-    // Texts
-    csvContent += "Original Text\r\n";
-    csvContent += `"${data.originalText.replace(/"/g, '""')}"\r\n`;
-    if(data.modifiedText) {
-       csvContent += "\r\nModified Text\r\n";
-       csvContent += `"${data.modifiedText.replace(/"/g, '""')}"\r\n`;
-    }
-
-    const encodedUri = encodeURI(csvContent);
-    const a = document.createElement('a');
-    a.href = encodedUri;
-    a.download = "wordwise_analysis.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-     toast({
-      title: "Exported!",
-      description: "Analysis results have been exported as a CSV file.",
-    });
-  }
-
-
-  const AnalysisOptions = () => (
-    <div className="w-full flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
-        <div className="flex items-center space-x-2">
-            <Switch id="include-spaces" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
-            <Label htmlFor="include-spaces" className="text-sm text-muted-foreground">Include spaces</Label>
-        </div>
-         <div className="flex items-center space-x-2">
-            <Switch id="ignore-punctuation" checked={ignorePunctuation} onCheckedChange={setIgnorePunctuation} />
-            <Label htmlFor="ignore-punctuation" className="text-sm text-muted-foreground">Ignore Punctuation</Label>
-        </div>
-         <div className="flex items-center space-x-2">
-            <Switch id="ignore-stopwords" checked={ignoreStopwords} onCheckedChange={setIgnoreStopwords} />
-            <Label htmlFor="ignore-stopwords" className="text-sm text-muted-foreground">Ignore Stopwords</Label>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-end justify-end gap-x-4 gap-y-2">
-        <div className="grid w-full max-w-[150px] items-center gap-1.5">
-          <Label htmlFor="min-word-length" className="text-sm text-muted-foreground">Min Word Length</Label>
-          <Input id="min-word-length" type="number" placeholder="e.g. 1" value={minWordLength} onChange={e => setMinWordLength(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
-        </div>
-        <div className="grid w-full max-w-[150px] items-center gap-1.5">
-          <Label htmlFor="max-word-length" className="text-sm text-muted-foreground">Max Word Length</Label>
-          <Input id="max-word-length" type="number" placeholder="e.g. 10" value={maxWordLength} onChange={e => setMaxWordLength(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -437,22 +132,9 @@ export default function WordCounterPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-2">
-                <div className="flex justify-between items-center">
+                 <div className="flex justify-between items-center">
                     <Label htmlFor="text-input" className="text-lg font-semibold">Your Text</Label>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }}
-                            accept=".txt,.md"
-                        />
-                        <Button variant="outline" size="sm" onClick={handleImportClick}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import File
-                        </Button>
-                        <Button onClick={handleClear} variant="outline" size="sm">Clear Text</Button>
-                    </div>
+                    <Button onClick={handleClear} variant="outline" size="sm">Clear Text</Button>
                 </div>
                 <Textarea
                   id="text-input"
@@ -463,16 +145,6 @@ export default function WordCounterPage() {
                   aria-label="Text input area"
                 />
               </div>
-
-              {highlightedText && (
-                  <div className="mt-4 grid gap-2">
-                     <Label className="text-lg font-semibold">Highlighted Text</Label>
-                     <Card className="min-h-[100px] p-4 text-base bg-muted/30">
-                        {highlightedText}
-                     </Card>
-                  </div>
-              )}
-
 
               <div className="mt-6 flex flex-col gap-4">
                 <Label className="text-lg font-semibold">AI Modifications</Label>
@@ -546,124 +218,31 @@ export default function WordCounterPage() {
                       value={modifiedText}
                       className="min-h-[150px] resize-y rounded-lg p-4 text-base bg-muted/30"
                     />
-                     <div className="mt-2">
-                       <div className="flex items-center justify-between">
-                          <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
-                       </div>
-                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 rounded-b-lg pt-2">
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                            <span className="text-sm font-medium text-muted-foreground">Words</span>
-                            <span className="text-4xl font-bold text-accent">{modifiedWordCount}</span>
-                          </div>
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                            <span className="text-sm font-medium text-muted-foreground">Characters</span>
-                            <span className="text-4xl font-bold text-accent">{modifiedCharCount}</span>
-                          </div>
-                           <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Clock className="h-4 w-4" />
-                                <span className="text-sm font-medium">Reading Time</span>
-                              </div>
-                              <span className="text-4xl font-bold text-accent">{modifiedReadingTime} min</span>
-                          </div>
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                               <div className="flex items-center gap-2 text-muted-foreground">
-                                <BrainCircuit className="h-4 w-4" />
-                                <span className="text-sm font-medium">Syllables</span>
-                              </div>
-                            <span className="text-4xl font-bold text-accent">{modifiedSyllableCount}</span>
-                          </div>
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                               <div className="flex items-center gap-2 text-muted-foreground">
-                                <BookOpen className="h-4 w-4" />
-                                <span className="text-sm font-medium">Readability</span>
-                              </div>
-                            <span className="text-4xl font-bold text-accent">{modifiedReadabilityScore}</span>
-                          </div>
-                        </div>
-                     </div>
+                     <div className="mt-2 grid grid-cols-2 gap-4 rounded-b-lg pt-2">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                          <Label className="text-sm font-medium text-muted-foreground">Words</Label>
+                          <span className="text-4xl font-bold text-accent">{modifiedWordCount}</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
+                          <Label className="text-sm font-medium text-muted-foreground">Characters</Label>
+                          <span className="text-4xl font-bold text-accent">{modifiedCharCount}</span>
+                      </div>
+                    </div>
                   </div>
               )}
             </CardContent>
             <CardFooter className="flex flex-col items-start gap-4 rounded-b-lg bg-muted/30 p-4 sm:p-6">
-              <div className="w-full flex items-center justify-between">
-                <Label className="text-lg font-semibold">Original Text Analysis</Label>
-                <div className="flex gap-2">
-                   <Button variant="outline" size="sm" onClick={handleExportJSON} disabled={!text}>
-                      <FileJson className="mr-2 h-4 w-4" />
-                      Export JSON
-                   </Button>
-                   <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!text}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Export CSV
-                   </Button>
-                </div>
-              </div>
-              <AnalysisOptions />
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
+               <Label className="text-lg font-semibold">Original Text Analysis</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <span className="text-sm font-medium text-muted-foreground">Words</span>
+                  <Label className="text-sm font-medium text-muted-foreground">Words</Label>
                   <span className="text-4xl font-bold text-accent">{wordCount}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <span className="text-sm font-medium text-muted-foreground">Characters</span>
+                  <Label className="text-sm font-medium text-muted-foreground">Characters</Label>
                   <span className="text-4xl font-bold text-accent">{charCount}</span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm font-medium">Reading Time</span>
-                  </div>
-                  <span className="text-4xl font-bold text-accent">{readingTime} min</span>
-                </div>
-                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <BrainCircuit className="h-4 w-4" />
-                    <span className="text-sm font-medium">Syllables</span>
-                  </div>
-                  <span className="text-4xl font-bold text-accent">{syllableCount}</span>
-                </div>
-                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="text-sm font-medium">Readability</span>
-                  </div>
-                  <span className="text-4xl font-bold text-accent">{readabilityScore}</span>
-                </div>
               </div>
-               {wordLengthData.length > 0 && (
-                <div className="w-full mt-4">
-                  <Label className="text-lg font-semibold">Word Length Distribution</Label>
-                   <ChartContainer config={{
-                      count: {
-                        label: "Word Count",
-                        color: "hsl(var(--primary))",
-                      },
-                    }} className="h-[250px] w-full">
-                      <BarChart accessibilityLayer data={wordLengthData}>
-                        <XAxis
-                          dataKey="length"
-                          tickLine={false}
-                          axisLine={false}
-                          tickMargin={8}
-                          tickFormatter={(value) => `${value}`}
-                          name="Word Length"
-                        />
-                         <YAxis
-                           tickLine={false}
-                           axisLine={false}
-                           tickMargin={8}
-                           allowDecimals={false}
-                         />
-                        <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent indicator="dot" />}
-                        />
-                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-                      </BarChart>
-                    </ChartContainer>
-                </div>
-              )}
             </CardFooter>
           </Card>
         </div>
@@ -674,7 +253,3 @@ export default function WordCounterPage() {
     </div>
   );
 }
-
-    
-
-    
