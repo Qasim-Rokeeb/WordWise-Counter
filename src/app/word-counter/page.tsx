@@ -31,7 +31,19 @@ import {
   XCircle,
   FileUp,
   BarChartHorizontal,
+  Trash2,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ModifyTextInput } from '@/ai/schemas/modify-text';
 import { Header } from '@/components/header';
 import syllable from 'syllable';
@@ -251,7 +263,11 @@ export default function WordCounterPage() {
   const handleClear = useCallback(() => {
     setText('');
     setModifiedText('');
-  }, []);
+    toast({
+        title: "Cleared",
+        description: "The text areas have been cleared."
+    });
+  }, [toast]);
 
   const handleCopy = useCallback(() => {
     if(!modifiedText) return;
@@ -403,7 +419,8 @@ export default function WordCounterPage() {
                     break;
                 case 'backspace':
                      event.preventDefault();
-                    handleClear();
+                    // This shortcut is now handled by the AlertDialog trigger.
+                    // To avoid confusion, we'll let the user click the button.
                     break;
                 case 'c':
                     if (event.shiftKey && modifiedText) {
@@ -425,7 +442,7 @@ export default function WordCounterPage() {
     return () => {
         window.removeEventListener('keydown', handleKeyDown);
     };
-}, [handleModify, handleClear, handleCopy, handleSwitch, modifiedText]);
+}, [handleModify, handleCopy, handleSwitch, modifiedText]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -463,9 +480,26 @@ export default function WordCounterPage() {
                        <FileUp className="mr-2" />
                        Import
                     </Button>
-                    <Button onClick={handleClear} variant="outline" size="sm">
-                      Clear Text
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="mr-2" />
+                           Clear Text
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action will permanently delete the original and modified text. This cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleClear}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
                 <Textarea
@@ -830,3 +864,5 @@ export default function WordCounterPage() {
     </div>
   );
 }
+
+    
