@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'WordWise Counter | AI-Powered Text Tools',
   description: 'Instantly count words, characters, and transform your text with powerful AI modifications.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
