@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -36,6 +36,8 @@ export default function WordCounterPage() {
   ]);
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
+  const [charCount, setCharCount] = useState(0);
   const { toast } = useToast();
 
   const getWordCount = (str: string) => {
@@ -43,8 +45,16 @@ export default function WordCounterPage() {
     return str.trim().split(/\s+/).length;
   }
 
-  const wordCount = useMemo(() => getWordCount(text), [text]);
-  const charCount = text.length;
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setWordCount(getWordCount(text));
+      setCharCount(text.length);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [text]);
   
   const modifiedWordCount = useMemo(() => getWordCount(modifiedText), [modifiedText]);
   const modifiedCharCount = modifiedText.length;
