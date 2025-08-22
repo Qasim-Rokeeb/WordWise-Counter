@@ -30,6 +30,9 @@ interface Modification {
   length: string;
 }
 
+const stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"];
+
+
 export default function WordCounterPage() {
   const [text, setText] = useState("");
   const [modifications, setModifications] = useState<Modification[]>([
@@ -37,7 +40,11 @@ export default function WordCounterPage() {
   ]);
   const [modifiedText, setModifiedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
   const [includeSpaces, setIncludeSpaces] = useState(true);
+  const [ignorePunctuation, setIgnorePunctuation] = useState(false);
+  const [ignoreStopwords, setIgnoreStopwords] = useState(false);
+
   
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
@@ -46,10 +53,22 @@ export default function WordCounterPage() {
   const [readabilityScore, setReadabilityScore] = useState(0);
 
   const { toast } = useToast();
+  
+  const processText = (str: string) => {
+    let processedText = str;
+    if (ignorePunctuation) {
+      processedText = processedText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+    }
+    return processedText;
+  }
 
   const getWordCount = (str: string) => {
     if (str.trim() === "") return 0;
-    return str.trim().split(/\s+/).length;
+    let words = str.trim().split(/\s+/);
+    if(ignoreStopwords) {
+      words = words.filter(word => !stopwords.includes(word.toLowerCase()));
+    }
+    return words.length;
   }
   
   const getSentenceCount = (str: string) => {
@@ -83,9 +102,10 @@ export default function WordCounterPage() {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      const currentWordCount = getWordCount(text);
-      const currentSyllableCount = getSyllableCount(text);
-      const currentSentenceCount = getSentenceCount(text);
+      const processed = processText(text);
+      const currentWordCount = getWordCount(processed);
+      const currentSyllableCount = getSyllableCount(processed);
+      const currentSentenceCount = getSentenceCount(processed);
       const currentCharCount = getCharCount(text, includeSpaces);
 
       setWordCount(currentWordCount);
@@ -98,12 +118,13 @@ export default function WordCounterPage() {
     return () => {
       clearTimeout(handler);
     };
-  }, [text, includeSpaces]);
+  }, [text, includeSpaces, ignorePunctuation, ignoreStopwords]);
   
   const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
-    const wc = getWordCount(modifiedText);
-    const sc = getSyllableCount(modifiedText);
-    const sentc = getSentenceCount(modifiedText);
+    const processed = processText(modifiedText);
+    const wc = getWordCount(processed);
+    const sc = getSyllableCount(processed);
+    const sentc = getSentenceCount(processed);
     const cc = getCharCount(modifiedText, includeSpaces);
     return {
       modifiedWordCount: wc,
@@ -112,7 +133,7 @@ export default function WordCounterPage() {
       modifiedSyllableCount: sc,
       modifiedReadabilityScore: calculateReadability(wc, sentc, sc),
     };
-  }, [modifiedText, includeSpaces]);
+  }, [modifiedText, includeSpaces, ignorePunctuation, ignoreStopwords]);
 
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
@@ -174,6 +195,23 @@ export default function WordCounterPage() {
     setText(modifiedText);
     setModifiedText("");
   };
+
+  const AnalysisOptions = ({isModified = false} : {isModified?: boolean}) => (
+    <div className="w-full flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+      <div className="flex items-center space-x-2">
+          <Switch id={`include-spaces-${isModified ? 'modified' : 'original'}`} checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
+          <Label htmlFor={`include-spaces-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Include spaces</Label>
+      </div>
+       <div className="flex items-center space-x-2">
+          <Switch id={`ignore-punctuation-${isModified ? 'modified' : 'original'}`} checked={ignorePunctuation} onCheckedChange={setIgnorePunctuation} />
+          <Label htmlFor={`ignore-punctuation-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Ignore Punctuation</Label>
+      </div>
+       <div className="flex items-center space-x-2">
+          <Switch id={`ignore-stopwords-${isModified ? 'modified' : 'original'}`} checked={ignoreStopwords} onCheckedChange={setIgnoreStopwords} />
+          <Label htmlFor={`ignore-stopwords-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Ignore Stopwords</Label>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -281,11 +319,8 @@ export default function WordCounterPage() {
                      <div className="mt-2">
                        <div className="flex items-center justify-between">
                           <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
-                           <div className="flex items-center space-x-2">
-                              <Switch id="include-spaces-modified" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
-                              <Label htmlFor="include-spaces-modified" className="text-sm text-muted-foreground">Include spaces</Label>
-                            </div>
                        </div>
+                        <AnalysisOptions isModified={true} />
                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 rounded-b-lg pt-2">
                           <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                             <span className="text-sm font-medium text-muted-foreground">Words</span>
@@ -324,11 +359,8 @@ export default function WordCounterPage() {
             <CardFooter className="flex flex-col items-start gap-2 rounded-b-lg bg-muted/30 p-4 sm:p-6">
               <div className="w-full flex items-center justify-between">
                 <Label className="text-lg font-semibold">Original Text Analysis</Label>
-                <div className="flex items-center space-x-2">
-                    <Switch id="include-spaces-original" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
-                    <Label htmlFor="include-spaces-original" className="text-sm text-muted-foreground">Include spaces</Label>
-                </div>
               </div>
+              <AnalysisOptions />
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                   <span className="text-sm font-medium text-muted-foreground">Words</span>
