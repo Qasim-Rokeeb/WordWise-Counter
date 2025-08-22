@@ -30,7 +30,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1">
-        <section className="w-full pt-24 md:pt-32 lg:pt-40 xl:pt-56">
+        <section className="w-full py-24 md:py-32 lg:py-40">
           <div className="container px-4 md:px-6">
             <motion.div 
               className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]"
@@ -71,7 +71,7 @@ export default function LandingPage() {
 
         <motion.section 
           id="features" 
-          className="w-full py-12 md:py-24 lg:py-32 bg-muted/40"
+          className="w-full py-16 md:py-24 lg:py-32 bg-muted/40"
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, amount: 0.2 }}
@@ -142,7 +142,7 @@ export default function LandingPage() {
         
         <motion.section 
           id="faq" 
-          className="w-full py-12 md:py-24 lg:py-32"
+          className="w-full py-16 md:py-24 lg:py-32"
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, amount: 0.2 }}
@@ -190,7 +190,7 @@ export default function LandingPage() {
         </motion.section>
 
         <motion.section 
-          className="w-full py-12 md:py-24 lg:py-32 border-t"
+          className="w-full py-16 md:py-24 lg:py-32 border-t"
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, amount: 0.2 }}
