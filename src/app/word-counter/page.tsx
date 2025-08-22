@@ -576,7 +576,7 @@ export default function WordCounterPage() {
                             </SelectItem>
                             <SelectItem value="summarize">Summarize</SelectItem>
                             <SelectItem value="explainLikeImFive">
-                              Explain Like I'm Five
+                              Explain Like I&apos;m Five
                             </SelectItem>
                             <SelectItem value="explainCreatively">
                               Explain Creatively
@@ -910,3 +910,5 @@ export default function WordCounterPage() {
     </div>
   );
 }
+
+    
