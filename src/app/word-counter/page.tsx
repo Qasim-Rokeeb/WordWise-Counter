@@ -60,19 +60,8 @@ import {
 } from 'recharts';
 import { testText, TestResult } from '@/ai/flows/test-text';
 import { TestSummary } from '@/components/test-summary';
-
-const STOPWORDS = new Set([
-  'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at',
-  'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'did', 'do',
-  'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have',
-  'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in',
-  'into', 'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not',
-  'now', 'o', 'of', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over',
-  'own', 's', 'same', 'she', 'should', 'so', 'some', 'such', 't', 'than', 'that', 'the', 'their',
-  'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to',
-  'too', 'under', 'until', 'up', 'very', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'while',
-  'who', 'whom', 'why', 'will', 'with', 'you', 'your', 'yours', 'yourself', 'yourselves'
-]);
+import { franc } from 'franc';
+import stopwords from 'stopwords-iso';
 
 
 interface Modification {
@@ -143,11 +132,16 @@ export default function WordCounterPage() {
       if (options.ignorePunctuation) {
         processedText = processedText.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '');
       }
+      
+      const lang = franc(inputText, {minLength: 3, only: ['eng', 'spa', 'fra', 'deu', 'rus', 'ita', 'por', 'nld']});
+      const langCode = lang === 'und' ? 'en' : lang.slice(0, 2);
+      const stopwordSet = new Set(stopwords[langCode as keyof typeof stopwords] || []);
+
 
       const words = processedText.trim().split(/\s+/).filter(Boolean);
       
       const filteredWords = options.ignoreStopwords
-        ? words.filter(word => !STOPWORDS.has(word.toLowerCase()))
+        ? words.filter(word => !stopwordSet.has(word.toLowerCase()))
         : words;
 
       const sentences = inputText.match(/[^.!?]+[.!?]+/g) || (inputText ? [inputText] : []);
@@ -740,7 +734,7 @@ export default function WordCounterPage() {
                             }
                             />
                             <Label htmlFor="mod-ignore-stopwords">
-                             Ignore Stopwords (e.g., "the", "a")
+                             Ignore Stopwords (auto-detect language)
                             </Label>
                         </div>
                     </div>
@@ -837,7 +831,7 @@ export default function WordCounterPage() {
                             }
                             />
                             <Label htmlFor="ignore-stopwords">
-                             Ignore Stopwords (e.g., "the", "a")
+                             Ignore Stopwords (auto-detect language)
                             </Label>
                         </div>
                     </div>
@@ -910,5 +904,3 @@ export default function WordCounterPage() {
     </div>
   );
 }
-
-    
