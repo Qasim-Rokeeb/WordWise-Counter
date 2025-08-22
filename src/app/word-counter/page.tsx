@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -33,6 +34,7 @@ import {
   BarChartHorizontal,
   Trash2,
   TestTube,
+  Share2
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -109,7 +111,10 @@ const getReadabilityDescription = (score: number) => {
   return 'Very difficult to read. Best understood by university graduates.';
 }
 
-export default function WordCounterPage() {
+function WordCounterPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [text, setText] = useState('');
   const [modifications, setModifications] = useState<Modification[]>([
     { id: 1, type: 'changeLength', length: '100' },
@@ -125,6 +130,29 @@ export default function WordCounterPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const textParam = searchParams.get('text');
+    const modsParam = searchParams.get('mods');
+    if (textParam) {
+        try {
+            const decodedText = atob(textParam);
+            setText(decodedText);
+        } catch (e) {
+            console.error("Failed to decode text from URL", e);
+        }
+    }
+    if (modsParam) {
+        try {
+            const decodedMods = JSON.parse(atob(modsParam));
+            if (Array.isArray(decodedMods) && decodedMods.length > 0) {
+              setModifications(decodedMods.map((mod: any, index: number) => ({ ...mod, id: mod.id || Date.now() + index })));
+            }
+        } catch (e) {
+            console.error("Failed to decode modifications from URL", e);
+        }
+    }
+  }, [searchParams]);
 
   const analyzeText = useCallback(
     (inputText: string, options: AnalysisOptions) => {
@@ -285,16 +313,55 @@ export default function WordCounterPage() {
     }
 
   }, [text, toast]);
+  
+  const handleShare = async () => {
+    if (typeof navigator.share === 'undefined' || !text) {
+      toast({
+        title: 'Sharing not supported',
+        description: 'Your browser does not support the Web Share API, or there is no text to share.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const encodedText = btoa(text);
+      const encodedMods = btoa(JSON.stringify(modifications));
+      const url = new URL(window.location.href);
+      url.searchParams.set('text', encodedText);
+      url.searchParams.set('mods', encodedMods);
+
+      await navigator.share({
+        title: 'WordWise Counter Analysis',
+        text: 'Check out this text analysis I did with WordWise Counter!',
+        url: url.toString(),
+      });
+      toast({
+        title: 'Shared!',
+        description: 'Your analysis has been shared.',
+      });
+    } catch (error) {
+        if((error as Error).name !== 'AbortError') {
+             toast({
+                title: 'Error sharing',
+                description: 'There was an error trying to share your analysis.',
+                variant: 'destructive',
+             });
+             console.error('Error sharing:', error);
+        }
+    }
+  };
 
   const handleClear = useCallback(() => {
     setText('');
     setModifiedText('');
     setTestResults(null);
+    router.push('/word-counter'); // Clear URL params
     toast({
         title: "Cleared",
         description: "The text areas have been cleared."
     });
-  }, [toast]);
+  }, [toast, router]);
 
   const handleCopy = useCallback(() => {
     if(!modifiedText) return;
@@ -497,6 +564,10 @@ export default function WordCounterPage() {
                     Your Text
                   </Label>
                   <div className="flex gap-2">
+                     <Button onClick={handleShare} variant="outline" size="sm" disabled={!text}>
+                       <Share2 className="mr-2" />
+                       Share
+                    </Button>
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -903,4 +974,13 @@ export default function WordCounterPage() {
       </footer>
     </div>
   );
+}
+
+
+export default function WordCounterPage() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <WordCounterPageContent />
+        </React.Suspense>
+    )
 }
