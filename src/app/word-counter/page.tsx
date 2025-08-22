@@ -44,6 +44,8 @@ export default function WordCounterPage() {
   const [includeSpaces, setIncludeSpaces] = useState(true);
   const [ignorePunctuation, setIgnorePunctuation] = useState(false);
   const [ignoreStopwords, setIgnoreStopwords] = useState(false);
+  const [minWordLength, setMinWordLength] = useState<number | ''>('');
+  const [maxWordLength, setMaxWordLength] = useState<number | ''>('');
 
   
   const [wordCount, setWordCount] = useState(0);
@@ -51,6 +53,7 @@ export default function WordCounterPage() {
   const [readingTime, setReadingTime] = useState(0);
   const [syllableCount, setSyllableCount] = useState(0);
   const [readabilityScore, setReadabilityScore] = useState(0);
+  const [highlightedText, setHighlightedText] = useState<React.ReactNode>(null);
 
   const { toast } = useToast();
   
@@ -113,12 +116,42 @@ export default function WordCounterPage() {
       setReadingTime(calculateReadingTime(currentWordCount));
       setSyllableCount(currentSyllableCount);
       setReadabilityScore(calculateReadability(currentWordCount, currentSentenceCount, currentSyllableCount));
+
+      // Highlighting logic
+      const minL = minWordLength === '' ? 0 : minWordLength;
+      const maxL = maxWordLength === '' ? Infinity : maxWordLength;
+
+      if (text.trim() === '' || (minWordLength === '' && maxWordLength === '')) {
+         setHighlightedText(null);
+         return;
+      }
+      
+      const parts = text.split(/(\s+)/); // Split by whitespace, keeping the whitespace
+      const highlighted = parts.map((part, index) => {
+        if (/\s+/.test(part)) { // It's a whitespace part
+          return <span key={index}>{part}</span>;
+        }
+        const word = part;
+        const wordLength = word.length;
+        const isHighlighted = wordLength >= minL && wordLength <= maxL;
+        
+        return isHighlighted ? (
+          <mark key={index} className="bg-accent/50 text-accent-foreground rounded-sm px-1">
+            {word}
+          </mark>
+        ) : (
+          <span key={index}>{word}</span>
+        );
+      });
+      setHighlightedText(<div className="whitespace-pre-wrap">{highlighted}</div>);
+
+
     }, 300);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [text, includeSpaces, ignorePunctuation, ignoreStopwords]);
+  }, [text, includeSpaces, ignorePunctuation, ignoreStopwords, minWordLength, maxWordLength]);
   
   const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
     const processed = processText(modifiedText);
@@ -196,19 +229,31 @@ export default function WordCounterPage() {
     setModifiedText("");
   };
 
-  const AnalysisOptions = ({isModified = false} : {isModified?: boolean}) => (
-    <div className="w-full flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
-      <div className="flex items-center space-x-2">
-          <Switch id={`include-spaces-${isModified ? 'modified' : 'original'}`} checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
-          <Label htmlFor={`include-spaces-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Include spaces</Label>
+  const AnalysisOptions = () => (
+    <div className="w-full flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+        <div className="flex items-center space-x-2">
+            <Switch id="include-spaces" checked={includeSpaces} onCheckedChange={setIncludeSpaces} />
+            <Label htmlFor="include-spaces" className="text-sm text-muted-foreground">Include spaces</Label>
+        </div>
+         <div className="flex items-center space-x-2">
+            <Switch id="ignore-punctuation" checked={ignorePunctuation} onCheckedChange={setIgnorePunctuation} />
+            <Label htmlFor="ignore-punctuation" className="text-sm text-muted-foreground">Ignore Punctuation</Label>
+        </div>
+         <div className="flex items-center space-x-2">
+            <Switch id="ignore-stopwords" checked={ignoreStopwords} onCheckedChange={setIgnoreStopwords} />
+            <Label htmlFor="ignore-stopwords" className="text-sm text-muted-foreground">Ignore Stopwords</Label>
+        </div>
       </div>
-       <div className="flex items-center space-x-2">
-          <Switch id={`ignore-punctuation-${isModified ? 'modified' : 'original'}`} checked={ignorePunctuation} onCheckedChange={setIgnorePunctuation} />
-          <Label htmlFor={`ignore-punctuation-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Ignore Punctuation</Label>
-      </div>
-       <div className="flex items-center space-x-2">
-          <Switch id={`ignore-stopwords-${isModified ? 'modified' : 'original'}`} checked={ignoreStopwords} onCheckedChange={setIgnoreStopwords} />
-          <Label htmlFor={`ignore-stopwords-${isModified ? 'modified' : 'original'}`} className="text-sm text-muted-foreground">Ignore Stopwords</Label>
+      <div className="flex flex-wrap items-end justify-end gap-x-4 gap-y-2">
+        <div className="grid w-full max-w-[150px] items-center gap-1.5">
+          <Label htmlFor="min-word-length" className="text-sm text-muted-foreground">Min Word Length</Label>
+          <Input id="min-word-length" type="number" placeholder="e.g. 1" value={minWordLength} onChange={e => setMinWordLength(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+        </div>
+        <div className="grid w-full max-w-[150px] items-center gap-1.5">
+          <Label htmlFor="max-word-length" className="text-sm text-muted-foreground">Max Word Length</Label>
+          <Input id="max-word-length" type="number" placeholder="e.g. 10" value={maxWordLength} onChange={e => setMaxWordLength(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+        </div>
       </div>
     </div>
   );
@@ -240,6 +285,16 @@ export default function WordCounterPage() {
                   aria-label="Text input area"
                 />
               </div>
+
+              {highlightedText && (
+                  <div className="mt-4 grid gap-2">
+                     <Label className="text-lg font-semibold">Highlighted Text</Label>
+                     <Card className="min-h-[100px] p-4 text-base bg-muted/30">
+                        {highlightedText}
+                     </Card>
+                  </div>
+              )}
+
 
               <div className="mt-6 flex flex-col gap-4">
                 <Label className="text-lg font-semibold">AI Modifications</Label>
@@ -320,7 +375,6 @@ export default function WordCounterPage() {
                        <div className="flex items-center justify-between">
                           <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
                        </div>
-                        <AnalysisOptions isModified={true} />
                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 rounded-b-lg pt-2">
                           <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                             <span className="text-sm font-medium text-muted-foreground">Words</span>
@@ -356,7 +410,7 @@ export default function WordCounterPage() {
                   </div>
               )}
             </CardContent>
-            <CardFooter className="flex flex-col items-start gap-2 rounded-b-lg bg-muted/30 p-4 sm:p-6">
+            <CardFooter className="flex flex-col items-start gap-4 rounded-b-lg bg-muted/30 p-4 sm:p-6">
               <div className="w-full flex items-center justify-between">
                 <Label className="text-lg font-semibold">Original Text Analysis</Label>
               </div>
