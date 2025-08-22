@@ -3,10 +3,57 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
+const siteConfig = {
+  name: "WordWise Counter",
+  description: "Instantly count words, characters, and transform your text with powerful AI modifications. Summarize, change length, simplify, and more.",
+  url: "https://wordwise-counter.app",
+  ogImage: "https://wordwise-counter.app/og.png",
+};
+
 export const metadata: Metadata = {
-  title: 'WordWise Counter | AI-Powered Text Tools',
-  description: 'Instantly count words, characters, and transform your text with powerful AI modifications.',
+  title: {
+    default: siteConfig.name,
+    template: `%s - ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
   manifest: '/manifest.json',
+  keywords: [
+    "Word Counter",
+    "Character Counter",
+    "Text Analyzer",
+    "AI Writing Assistant",
+    "Summarizer",
+    "Text Simplifier",
+    "Writing Tools",
+  ],
+  authors: [{ name: "WordWise Team" }],
+  creator: "WordWise Team",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@wordwise",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
