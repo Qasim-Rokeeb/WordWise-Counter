@@ -17,7 +17,7 @@ import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle, Clock, BookOpen, BrainCircuit, FileJson, FileText } from "lucide-react";
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
 import { syllable } from "syllable";
@@ -187,6 +187,7 @@ export default function WordCounterPage() {
   }, [text, includeSpaces, ignorePunctuation, ignoreStopwords, minWordLength, maxWordLength]);
   
   const { modifiedWordCount, modifiedCharCount, modifiedReadingTime, modifiedSyllableCount, modifiedReadabilityScore } = useMemo(() => {
+    if (!modifiedText) return { modifiedWordCount: 0, modifiedCharCount: 0, modifiedReadingTime: 0, modifiedSyllableCount: 0, modifiedReadabilityScore: 0 };
     const processed = processText(modifiedText);
     const words = getWords(processed);
     const wc = getWordCount(words);
@@ -262,6 +263,107 @@ export default function WordCounterPage() {
     setText(modifiedText);
     setModifiedText("");
   };
+
+  const getExportData = () => {
+    const data: any = {
+      originalText: text,
+      analysis: {
+        wordCount,
+        charCount,
+        readingTime,
+        syllableCount,
+        readabilityScore,
+        wordLengthDistribution: wordLengthData,
+      },
+      settings: {
+        includeSpaces,
+        ignorePunctuation,
+        ignoreStopwords,
+        minWordLength: minWordLength === '' ? null : minWordLength,
+        maxWordLength: maxWordLength === '' ? null : maxWordLength,
+      }
+    };
+    if (modifiedText) {
+      data.modifiedText = modifiedText;
+      data.modifiedAnalysis = {
+        wordCount: modifiedWordCount,
+        charCount: modifiedCharCount,
+        readingTime: modifiedReadingTime,
+        syllableCount: modifiedSyllableCount,
+        readabilityScore: modifiedReadabilityScore,
+      }
+    }
+    return data;
+  }
+
+  const handleExportJSON = () => {
+    const data = getExportData();
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'wordwise_analysis.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Exported!",
+      description: "Analysis results have been exported as a JSON file.",
+    });
+  }
+
+  const handleExportCSV = () => {
+    const data = getExportData();
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Summary
+    csvContent += "Metric,Original Value,Modified Value\r\n";
+    csvContent += `Word Count,${data.analysis.wordCount},${data.modifiedAnalysis?.wordCount || ''}\r\n`;
+    csvContent += `Character Count,${data.analysis.charCount},${data.modifiedAnalysis?.charCount || ''}\r\n`;
+    csvContent += `Reading Time (min),${data.analysis.readingTime},${data.modifiedAnalysis?.readingTime || ''}\r\n`;
+    csvContent += `Syllable Count,${data.analysis.syllableCount},${data.modifiedAnalysis?.syllableCount || ''}\r\n`;
+    csvContent += `Readability Score,${data.analysis.readabilityScore},${data.modifiedAnalysis?.readabilityScore || ''}\r\n`;
+    csvContent += "\r\n";
+
+    // Word Length Distribution
+    csvContent += "Word Length,Count\r\n";
+    data.analysis.wordLengthDistribution.forEach((row: WordLengthData) => {
+        csvContent += `${row.length},${row.count}\r\n`;
+    });
+    csvContent += "\r\n";
+    
+    // Settings
+    csvContent += "Setting,Value\r\n";
+    csvContent += `Include Spaces,${data.settings.includeSpaces}\r\n`;
+    csvContent += `Ignore Punctuation,${data.settings.ignorePunctuation}\r\n`;
+    csvContent += `Ignore Stopwords,${data.settings.ignoreStopwords}\r\n`;
+    csvContent += `Min Word Length,${data.settings.minWordLength || ''}\r\n`;
+    csvContent += `Max Word Length,${data.settings.maxWordLength || ''}\r\n`;
+    csvContent += "\r\n";
+
+    // Texts
+    csvContent += "Original Text\r\n";
+    csvContent += `"${data.originalText.replace(/"/g, '""')}"\r\n`;
+    if(data.modifiedText) {
+       csvContent += "\r\nModified Text\r\n";
+       csvContent += `"${data.modifiedText.replace(/"/g, '""')}"\r\n`;
+    }
+
+    const encodedUri = encodeURI(csvContent);
+    const a = document.createElement('a');
+    a.href = encodedUri;
+    a.download = "wordwise_analysis.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+     toast({
+      title: "Exported!",
+      description: "Analysis results have been exported as a CSV file.",
+    });
+  }
+
 
   const AnalysisOptions = () => (
     <div className="w-full flex flex-col gap-4">
@@ -447,6 +549,16 @@ export default function WordCounterPage() {
             <CardFooter className="flex flex-col items-start gap-4 rounded-b-lg bg-muted/30 p-4 sm:p-6">
               <div className="w-full flex items-center justify-between">
                 <Label className="text-lg font-semibold">Original Text Analysis</Label>
+                <div className="flex gap-2">
+                   <Button variant="outline" size="sm" onClick={handleExportJSON} disabled={!text}>
+                      <FileJson className="mr-2 h-4 w-4" />
+                      Export JSON
+                   </Button>
+                   <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!text}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Export CSV
+                   </Button>
+                </div>
               </div>
               <AnalysisOptions />
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full">
