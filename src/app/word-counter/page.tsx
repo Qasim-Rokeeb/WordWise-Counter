@@ -18,7 +18,7 @@ import { modifyText } from "@/ai/flows/modify-text";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Copy, Replace, PlusCircle, XCircle } from "lucide-react";
+import { Copy, Replace, PlusCircle, XCircle, Clock } from "lucide-react";
 import { ModifyTextInput } from "@/ai/schemas/modify-text";
 import { Header } from "@/components/header";
 
@@ -38,6 +38,7 @@ export default function WordCounterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
+  const [readingTime, setReadingTime] = useState(0);
   const { toast } = useToast();
 
   const getWordCount = (str: string) => {
@@ -45,10 +46,19 @@ export default function WordCounterPage() {
     return str.trim().split(/\s+/).length;
   }
 
+  const calculateReadingTime = (wordCount: number) => {
+    const wordsPerMinute = 225;
+    if (wordCount === 0) return 0;
+    const minutes = wordCount / wordsPerMinute;
+    return Math.ceil(minutes);
+  }
+
   useEffect(() => {
     const handler = setTimeout(() => {
-      setWordCount(getWordCount(text));
+      const currentWordCount = getWordCount(text);
+      setWordCount(currentWordCount);
       setCharCount(text.length);
+      setReadingTime(calculateReadingTime(currentWordCount));
     }, 300);
 
     return () => {
@@ -58,6 +68,8 @@ export default function WordCounterPage() {
   
   const modifiedWordCount = useMemo(() => getWordCount(modifiedText), [modifiedText]);
   const modifiedCharCount = modifiedText.length;
+  const modifiedReadingTime = useMemo(() => calculateReadingTime(modifiedWordCount), [modifiedWordCount]);
+
 
   const handleModificationChange = (id: number, field: keyof Omit<Modification, 'id'>, value: string) => {
     setModifications(mods => mods.map(mod => mod.id === id ? { ...mod, [field]: value } : mod));
@@ -241,6 +253,14 @@ export default function WordCounterPage() {
                               {modifiedCharCount}
                             </span>
                           </div>
+                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
+                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
+                              Reading Time
+                            </span>
+                            <span className="text-4xl font-bold text-accent sm:order-1">
+                              {modifiedReadingTime} min
+                            </span>
+                          </div>
                         </div>
                      </div>
                   </div>
@@ -263,6 +283,17 @@ export default function WordCounterPage() {
                   </span>
                   <span className="text-4xl font-bold text-accent sm:order-1">
                     {charCount}
+                  </span>
+                </div>
+                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
+                  <div className="flex items-center gap-2 text-muted-foreground sm:order-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      Reading Time
+                    </span>
+                  </div>
+                  <span className="text-4xl font-bold text-accent sm:order-1">
+                    {readingTime} min
                   </span>
                 </div>
               </div>
