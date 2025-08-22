@@ -125,14 +125,20 @@ export default function WordCounterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Textarea
-                placeholder="Start writing, or paste your text here..."
-                className="min-h-[250px] resize-y rounded-lg p-4 text-base focus-visible:ring-accent bg-background/50"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                aria-label="Text input area"
-              />
-              <div className="mt-4 flex flex-col gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="text-input" className="text-lg font-semibold">Your Text</Label>
+                <Textarea
+                  id="text-input"
+                  placeholder="Start writing, or paste your text here..."
+                  className="min-h-[250px] resize-y rounded-lg p-4 text-base focus-visible:ring-accent bg-background/50"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  aria-label="Text input area"
+                />
+              </div>
+
+              <div className="mt-6 flex flex-col gap-4">
+                <Label className="text-lg font-semibold">AI Modifications</Label>
                 {modifications.map((mod, index) => (
                   <div key={mod.id} className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
                       <div className="flex flex-col gap-2">
@@ -180,14 +186,14 @@ export default function WordCounterPage() {
                 </div>
               </div>
 
-               <div className="mt-4 grid grid-cols-2 gap-2">
+               <div className="mt-6 grid grid-cols-2 gap-2">
                   <Button onClick={handleClear} variant="outline" className="w-full">Clear Text</Button>
                   <Button onClick={handleModify} disabled={isLoading} className="w-full">
                       {isLoading ? 'Modifying...' : 'Modify Text'}
                   </Button>
               </div>
               {modifiedText && (
-                 <div className="mt-4">
+                 <div className="mt-6">
                     <CardHeader className="p-0 mb-2 flex flex-row items-center justify-between">
                       <CardTitle className="text-xl">Modified Text</CardTitle>
                       <div className="flex items-center gap-2">
@@ -206,43 +212,49 @@ export default function WordCounterPage() {
                       value={modifiedText}
                       className="min-h-[150px] resize-y rounded-lg p-4 text-base bg-muted/30"
                     />
-                     <div className="flex flex-col items-stretch gap-4 rounded-b-lg p-4 sm:flex-row sm:items-center sm:justify-center sm:gap-8 sm:p-6">
-                        <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                          <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                            Words
-                          </span>
-                          <span className="text-4xl font-bold text-accent sm:order-1">
-                            {modifiedWordCount}
-                          </span>
+                     <div className="mt-2">
+                       <Label className="text-sm font-medium text-muted-foreground">Modified Text Counts</Label>
+                       <div className="flex flex-col items-stretch gap-4 rounded-b-lg pt-2 sm:flex-row sm:items-center sm:justify-start sm:gap-8">
+                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
+                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
+                              Words
+                            </span>
+                            <span className="text-4xl font-bold text-accent sm:order-1">
+                              {modifiedWordCount}
+                            </span>
+                          </div>
+                          <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
+                            <span className="text-sm font-medium text-muted-foreground sm:order-2">
+                              Characters
+                            </span>
+                            <span className="text-4xl font-bold text-accent sm:order-1">
+                              {modifiedCharCount}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                          <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                            Characters
-                          </span>
-                          <span className="text-4xl font-bold text-accent sm:order-1">
-                            {modifiedCharCount}
-                          </span>
-                        </div>
-                      </div>
+                     </div>
                   </div>
               )}
             </CardContent>
-            <CardFooter className="flex flex-col items-stretch gap-4 rounded-b-lg bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-center sm:gap-8 sm:p-6">
-              <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                  Words
-                </span>
-                <span className="text-4xl font-bold text-accent sm:order-1">
-                  {wordCount}
-                </span>
-              </div>
-              <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1">
-                <span className="text-sm font-medium text-muted-foreground sm:order-2">
-                  Characters
-                </span>
-                <span className="text-4xl font-bold text-accent sm:order-1">
-                  {charCount}
-                </span>
+            <CardFooter className="flex flex-col items-start gap-2 rounded-b-lg bg-muted/30 p-4 sm:p-6">
+              <Label className="text-lg font-semibold">Original Text Counts</Label>
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-center sm:gap-8 w-full">
+                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
+                  <span className="text-sm font-medium text-muted-foreground sm:order-2">
+                    Words
+                  </span>
+                  <span className="text-4xl font-bold text-accent sm:order-1">
+                    {wordCount}
+                  </span>
+                </div>
+                <div className="flex flex-row items-center justify-between rounded-lg bg-background/50 p-4 sm:flex-col sm:justify-center sm:p-6 sm:gap-1 flex-1">
+                  <span className="text-sm font-medium text-muted-foreground sm:order-2">
+                    Characters
+                  </span>
+                  <span className="text-4xl font-bold text-accent sm:order-1">
+                    {charCount}
+                  </span>
+                </div>
               </div>
             </CardFooter>
           </Card>
