@@ -66,8 +66,12 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/syllable": "^4.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "15.3.3",
+    "eslint-config-prettier": "^9.1.0",
     "genkit-cli": "^1.14.1",
     "postcss": "^8",
+    "prettier": "^3.3.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
