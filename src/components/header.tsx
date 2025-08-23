@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export function Header() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export function Header() {
       <Link href="/" className="flex items-center justify-center">
         <span className="text-xl font-bold">WordWise</span>
       </Link>
-      <nav className="ml-auto flex gap-4 sm:gap-6">
+      <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
         <Link
           href="/word-counter"
         >
@@ -29,6 +30,7 @@ export function Header() {
         >
            <Button variant="ghost">Features</Button>
         </Link>
+        <ThemeSwitcher />
       </nav>
     </header>
   );
