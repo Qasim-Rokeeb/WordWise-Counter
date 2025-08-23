@@ -23,6 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -34,7 +40,8 @@ import {
   BarChartHorizontal,
   Trash2,
   TestTube,
-  Share2
+  Share2,
+  BookText
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -78,6 +85,21 @@ const initialAnalysisOptions: AnalysisOptions = {
   minWordLength: '',
   maxWordLength: '',
 };
+
+const sampleTexts = [
+  {
+    label: "Short Paragraph",
+    text: "The quick brown fox jumps over the lazy dog. This sentence contains all the letters of the English alphabet. It's a classic pangram used for testing typefaces and other text-based applications.",
+  },
+  {
+    label: "Gettysburg Address",
+    text: "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.",
+  },
+  {
+    label: "Complex Scientific Text",
+    text: "Mitochondrial neurogastrointestinal encephalomyopathy (MNGIE) is a rare, autosomal recessive multisystem disorder caused by mutations in the TYMP gene, which encodes thymidine phosphorylase. The enzymatic deficiency leads to systemic accumulation of thymidine and deoxyuridine, resulting in mitochondrial DNA instability, depletion, and deletions. Clinical manifestations are progressive and include severe gastrointestinal dysmotility, cachexia, ptosis, ophthalmoplegia, peripheral neuropathy, and leukoencephalopathy.",
+  },
+];
 
 function WordCounterPageContent() {
   const searchParams = useSearchParams();
@@ -462,6 +484,21 @@ function WordCounterPageContent() {
                     Your Text
                   </Label>
                   <div className="flex gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <BookText className="mr-2" />
+                          Sample Texts
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        {sampleTexts.map((sample) => (
+                          <DropdownMenuItem key={sample.label} onSelect={() => setText(sample.text)}>
+                            {sample.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                      <Button onClick={handleShare} variant="outline" size="sm" disabled={!text}>
                        <Share2 className="mr-2" />
                        Share
@@ -889,3 +926,4 @@ export default function WordCounterPage() {
     
 
     
+
