@@ -42,7 +42,9 @@ import {
   Trash2,
   TestTube,
   Share2,
-  BookText
+  BookText,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -72,6 +74,7 @@ import { TestSummary } from '@/components/test-summary';
 import { analyzeText, getReadabilityDescription } from '@/lib/text-stats';
 import type { AnalysisOptions } from '@/lib/text-stats';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 
 interface Modification {
@@ -115,6 +118,7 @@ function WordCounterPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResults, setTestResults] = useState<TestResult | null>(null);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(false);
 
   const [analysisOptions, setAnalysisOptions] = useState(initialAnalysisOptions);
   const [modifiedAnalysisOptions, setModifiedAnalysisOptions] = useState(initialAnalysisOptions);
@@ -466,7 +470,10 @@ function WordCounterPageContent() {
       <Header />
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="w-full relative mt-8">
-          <Card className="shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20 pb-[350px] md:pb-[450px]">
+          <Card className={cn(
+            "shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20",
+            isPanelExpanded ? "pb-[650px] md:pb-[450px]" : "pb-[350px] md:pb-[250px]"
+          )}>
             <CardHeader>
               <CardTitle className="text-center text-3xl font-bold tracking-tight md:text-4xl">
                 WordWise Counter
@@ -759,6 +766,7 @@ function WordCounterPageContent() {
             "border-t border-border/50 bg-background/80 backdrop-blur-sm",
             "max-w-5xl mx-auto rounded-t-lg"
             )}>
+             <Collapsible open={isPanelExpanded} onOpenChange={setIsPanelExpanded} className="w-full">
               <div className="w-full flex justify-between items-center">
                 <Label className="text-lg font-semibold">
                   Original Text Analysis
@@ -766,9 +774,15 @@ function WordCounterPageContent() {
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => exportData('json')}>Export JSON</Button>
                     <Button variant="outline" size="sm" onClick={() => exportData('csv')}>Export CSV</Button>
+                     <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        {isPanelExpanded ? <ChevronDown /> : <ChevronUp /> }
+                        <span className="ml-2">{isPanelExpanded ? 'Hide Details' : 'Show Details'}</span>
+                      </Button>
+                    </CollapsibleTrigger>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full pt-4">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
                   <Label className="text-sm font-medium text-muted-foreground">
                     Words
@@ -812,7 +826,7 @@ function WordCounterPageContent() {
                 </div>
               </div>
               {originalTextAnalysis.readabilityScore > 0 && <p className="text-sm text-muted-foreground text-center mt-2 w-full">{getReadabilityDescription(originalTextAnalysis.readabilityScore)}</p>}
-               <div className="w-full flex flex-col gap-4 mt-4">
+               <CollapsibleContent className="w-full flex flex-col gap-4 mt-4 animate-in fade-in-0 zoom-in-95">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center space-x-2">
@@ -908,7 +922,8 @@ function WordCounterPageContent() {
                     </div>
                     {testResults && <TestSummary results={testResults} />}
                  </div>
-               </div>
+               </CollapsibleContent>
+             </Collapsible>
             </CardFooter>
         </div>
       </main>
@@ -935,3 +950,6 @@ export default function WordCounterPage() {
     
 
 
+
+
+    
