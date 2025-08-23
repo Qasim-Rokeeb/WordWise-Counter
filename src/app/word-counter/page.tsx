@@ -75,6 +75,7 @@ import { analyzeText, getReadabilityDescription } from '@/lib/text-stats';
 import type { AnalysisOptions } from '@/lib/text-stats';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 
 
 interface Modification {
@@ -403,18 +404,18 @@ function WordCounterPageContent() {
 
     const words = text.split(/(\s+)/); // Split by space but keep separators
     return (
-      <p className="min-h-[100px] resize-y rounded-lg p-4 text-base bg-muted/30 whitespace-pre-wrap">
+      <div className="min-h-[100px] resize-y rounded-lg p-4 text-base bg-muted/30 whitespace-pre-wrap leading-loose">
         {words.map((word, index) => {
           const wordToCheck = options.ignorePunctuation ? word.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '') : word;
           return highlightedWords.has(wordToCheck) ? (
-            <mark key={index} className="bg-accent/50 text-accent-foreground px-1 rounded">
+            <Badge key={index} variant="secondary" className="text-base mx-1">
               {word}
-            </mark>
+            </Badge>
           ) : (
             <span key={index}>{word}</span>
           );
         })}
-      </p>
+      </div>
     );
   }, []);
 
@@ -950,6 +951,9 @@ export default function WordCounterPage() {
     
 
 
+
+
+    
 
 
     
