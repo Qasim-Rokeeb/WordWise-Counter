@@ -29,7 +29,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1 pt-14">
         <section className="w-full py-24 md:py-32 lg:py-40">
           <div className="container px-4 md:px-6">
             <motion.div 

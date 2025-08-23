@@ -9,12 +9,11 @@ import { ThemeSwitcher } from "./theme-switcher";
 
 export function Header() {
   const pathname = usePathname();
-  const isLandingPage = pathname === '/';
-
+  
   return (
     <header className={cn(
-      "px-4 lg:px-6 h-14 flex items-center top-0 left-0 right-0 z-50",
-      isLandingPage ? "fixed bg-background/30 backdrop-blur-sm" : "absolute"
+      "px-4 lg:px-6 h-14 flex items-center fixed top-0 left-0 right-0 z-50",
+      "bg-background/80 backdrop-blur-sm border-b"
     )}>
       <Link href="/" className="flex items-center justify-center">
         <span className="text-xl font-bold">WordWise</span>
