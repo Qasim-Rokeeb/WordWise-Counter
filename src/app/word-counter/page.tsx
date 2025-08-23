@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
@@ -70,6 +71,7 @@ import { testText, TestResult } from '@/ai/flows/test-text';
 import { TestSummary } from '@/components/test-summary';
 import { analyzeText, getReadabilityDescription } from '@/lib/text-stats';
 import type { AnalysisOptions } from '@/lib/text-stats';
+import { cn } from '@/lib/utils';
 
 
 interface Modification {
@@ -464,7 +466,7 @@ function WordCounterPageContent() {
       <Header />
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="w-full relative mt-8">
-          <Card className="shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20">
+          <Card className="shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20 pb-[350px] md:pb-[450px]">
             <CardHeader>
               <CardTitle className="text-center text-3xl font-bold tracking-tight md:text-4xl">
                 WordWise Counter
@@ -750,7 +752,13 @@ function WordCounterPageContent() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex flex-col items-start gap-4 rounded-b-lg bg-muted/30 p-4 sm:p-6">
+          </Card>
+          <CardFooter className={cn(
+            "fixed bottom-0 left-0 right-0 z-10",
+            "flex flex-col items-start gap-4 p-4 sm:p-6",
+            "border-t border-border/50 bg-background/80 backdrop-blur-sm",
+            "max-w-5xl mx-auto rounded-t-lg"
+            )}>
               <div className="w-full flex justify-between items-center">
                 <Label className="text-lg font-semibold">
                   Original Text Analysis
@@ -902,7 +910,6 @@ function WordCounterPageContent() {
                  </div>
                </div>
             </CardFooter>
-          </Card>
         </div>
       </main>
       <footer className="py-6 w-full shrink-0 flex items-center justify-center">
@@ -926,4 +933,5 @@ export default function WordCounterPage() {
     
 
     
+
 
