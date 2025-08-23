@@ -13,7 +13,7 @@ const ModificationSchema = z.object({
   type: z
     .string()
     .describe(
-      'The type of modification to perform (e.g., "changeLength", "summarize", "explainLikeImFive", "explainCreatively", "humanize", "jargonize").'
+      'The type of modification to perform (e.g., "changeLength", "summarize", "explainLikeImFive", "explainCreatively", "humanize", "jargonize", "formal").'
     ),
   length: z
     .string()

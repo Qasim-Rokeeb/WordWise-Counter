@@ -544,6 +544,9 @@ function WordCounterPageContent() {
                             <SelectItem value="explainCreatively">
                               Explain Creatively
                             </SelectItem>
+                             <SelectItem value="formal">
+                              Formal / Docs
+                            </SelectItem>
                             <SelectItem value="humanize">Humanize</SelectItem>
                             <SelectItem value="jargonize">Jargonize</SelectItem>
                           </SelectContent>
