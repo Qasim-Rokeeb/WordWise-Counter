@@ -440,7 +440,7 @@ function WordCounterPageContent() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
+      <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="w-full relative mt-8">
           <Card className="shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20">
             <CardHeader>
@@ -530,7 +530,7 @@ function WordCounterPageContent() {
                             handleModificationChange(mod.id, 'type', value)
                           }
                         >
-                          <SelectTrigger id={`modificationType-${mod.id}`}>
+                          <SelectTrigger id={`modificationType-${mod.id}`} className="focus-visible:ring-accent">
                             <SelectValue placeholder="Select a modification" />
                           </SelectTrigger>
                           <SelectContent>
