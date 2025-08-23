@@ -44,7 +44,11 @@ import {
   Share2,
   BookText,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Clock,
+  BookOpen,
+  CaseSensitive,
+  Sigma
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -472,7 +476,7 @@ function WordCounterPageContent() {
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 pt-20">
         <div className="w-full relative mt-8">
           <Card className={cn(
-            "shadow-2xl bg-card/80 backdrop-blur-sm border-primary/20",
+            "shadow-2xl bg-card/80 backdrop-blur-lg border-white/10",
             isPanelExpanded ? "pb-[650px] md:pb-[450px]" : "pb-[350px] md:pb-[250px]"
           )}>
             <CardHeader>
@@ -764,7 +768,7 @@ function WordCounterPageContent() {
           <CardFooter className={cn(
             "fixed bottom-0 left-0 right-0 z-10",
             "flex flex-col items-start gap-4 p-4 sm:p-6",
-            "border-t border-border/50 bg-background/80 backdrop-blur-sm",
+            "border-t border-white/10 bg-card/80 backdrop-blur-lg",
             "max-w-5xl mx-auto rounded-t-lg"
             )}>
              <Collapsible open={isPanelExpanded} onOpenChange={setIsPanelExpanded} className="w-full">
@@ -785,42 +789,57 @@ function WordCounterPageContent() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full pt-4">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    Words
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Words
+                    </Label>
+                  </div>
                   <span className="text-4xl font-bold text-accent">
                     {originalTextAnalysis.wordCount}
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    Characters
-                  </Label>
+                   <div className="flex items-center gap-2">
+                    <CaseSensitive className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Characters
+                    </Label>
+                  </div>
                   <span className="text-4xl font-bold text-accent">
                     {originalTextAnalysis.charCount}
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    Reading Time
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Reading Time
+                    </Label>
+                  </div>
                   <span className="text-4xl font-bold text-accent">
                     ~{originalTextAnalysis.readingTime}
                     <span className="text-lg">min</span>
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    Syllables
-                  </Label>
+                   <div className="flex items-center gap-2">
+                    <Sigma className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Syllables
+                    </Label>
+                  </div>
                   <span className="text-4xl font-bold text-accent">
                     {originalTextAnalysis.syllableCount}
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center rounded-lg bg-background/50 p-4 sm:p-6 gap-1">
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    Readability
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <TestTube className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Readability
+                    </Label>
+                  </div>
                   <span className="text-4xl font-bold text-accent">
                     {originalTextAnalysis.readabilityScore.toFixed(0)}
                   </span>
@@ -945,15 +964,3 @@ export default function WordCounterPage() {
         </Suspense>
     )
 }
-
-    
-
-    
-
-
-
-
-    
-
-
-    
