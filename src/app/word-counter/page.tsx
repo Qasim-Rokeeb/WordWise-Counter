@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Card,
@@ -131,7 +131,7 @@ function WordCounterPageContent() {
     [modifiedText, modifiedAnalysisOptions]
   );
 
-  const handleModificationChange = (
+  const handleModificationChange = useCallback((
     id: number,
     field: keyof Omit<Modification, 'id'>,
     value: string
@@ -139,18 +139,18 @@ function WordCounterPageContent() {
     setModifications((mods) =>
       mods.map((mod) => (mod.id === id ? { ...mod, [field]: value } : mod))
     );
-  };
+  }, []);
 
-  const addModification = () => {
+  const addModification = useCallback(() => {
     setModifications((mods) => [
       ...mods,
       { id: Date.now(), type: 'summarize', length: '' },
     ]);
-  };
+  }, []);
 
-  const removeModification = (id: number) => {
+  const removeModification = useCallback((id: number) => {
     setModifications((mods) => mods.filter((mod) => mod.id !== id));
-  };
+  }, []);
   
   const handleModify = useCallback(async () => {
     if (!text) {
@@ -212,7 +212,7 @@ function WordCounterPageContent() {
 
   }, [text, toast]);
   
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (typeof navigator.share === 'undefined' || !text) {
       toast({
         title: 'Sharing not supported',
@@ -248,7 +248,7 @@ function WordCounterPageContent() {
              console.error('Error sharing:', error);
         }
     }
-  };
+  }, [text, modifications, toast]);
 
   const handleClear = useCallback(() => {
     setText('');
@@ -277,15 +277,15 @@ function WordCounterPageContent() {
   }, [modifiedText]);
 
 
-  const handleAnalysisOptionChange = (
+  const handleAnalysisOptionChange = useCallback((
     setter: React.Dispatch<React.SetStateAction<AnalysisOptions>>,
     field: keyof AnalysisOptions,
     value: boolean | string
   ) => {
     setter((options) => ({ ...options, [field]: value }));
-  };
+  }, []);
   
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -302,13 +302,13 @@ function WordCounterPageContent() {
     if(event.target) {
         event.target.value = '';
     }
-  };
+  }, [toast]);
 
-  const handleImportClick = () => {
+  const handleImportClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const exportData = (format: 'json' | 'csv') => {
+  const exportData = useCallback((format: 'json' | 'csv') => {
     const data = {
       originalText: text,
       analysis: {
@@ -359,9 +359,9 @@ function WordCounterPageContent() {
         title: "Exported!",
         description: `Your analysis has been downloaded as ${filename}.`
     });
-  };
+  }, [text, modifiedText, originalTextAnalysis, modifiedTextAnalysis, testResults, toast]);
 
-  const renderHighlightedText = (
+  const renderHighlightedText = useCallback((
     text: string,
     highlightedWords: Set<string>,
     options: AnalysisOptions
@@ -388,9 +388,9 @@ function WordCounterPageContent() {
         })}
       </p>
     );
-  };
+  }, []);
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  const CustomTooltip = useCallback(({ active, payload, label }: TooltipProps<number, string>) => {
       if (active && payload && payload.length) {
         return (
           <div className="p-2 bg-background/80 border rounded-lg shadow-lg">
@@ -400,7 +400,7 @@ function WordCounterPageContent() {
         );
       }
       return null;
-  };
+  }, []);
   
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -479,7 +479,7 @@ function WordCounterPageContent() {
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button variant="destructive" size="sm" disabled={!text && !modifiedText}>
                           <Trash2 className="mr-2" />
                            Clear Text
                         </Button>
@@ -877,8 +877,10 @@ function WordCounterPageContent() {
 
 export default function WordCounterPage() {
     return (
-        <React.Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div>Loading...</div>}>
             <WordCounterPageContent />
-        </React.Suspense>
+        </Suspense>
     )
 }
+
+    
